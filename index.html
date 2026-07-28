@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberball - Grundgerüst</title>
+    <!-- Phaser von CDN laden (keine Installation nötig!) -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+    <!-- Unser Spiel-Code -->
+    <script src="js/game.js" defer></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #ffffff; /* 👈 Weißer Hintergrund */
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        #game-container {
+            width: 800px;
+            height: 500px;
+            background-color: #ffffff; /* 👈 Weißer Hintergrund */
+            border: 2px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .info {
+            text-align: center;
+            color: #666;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+<h1>Cyberball - Grundgerüst</h1>
+<div id="game-container"></div>
+<div class="info">
+    <p>Klicke auf einen Spieler, um den Ball zu werfen!</p>
+</div>
+</body>
+</html>

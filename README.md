@@ -1,6 +1,6 @@
 # Cyberball
 
-A simple Phaser 3 based ball passing game where players throw and catch a ball.
+A simple Phaser 3 based ball passing game with configurable player setup. Features a configuration builder and playable game mode.
 
 ---
 
@@ -11,15 +11,25 @@ A simple Phaser 3 based ball passing game where players throw and catch a ball.
 - **AI Players**: CPU players automatically throw to random targets
 - **Look Direction**: Players face the ball during flight, target player faces thrower during catch
 - **Visual Feedback**: Ball appears in front of body when catching, behind when holding
+- **Configuration Builder**: Set number of CPU players (2 or 3) before starting the game
+- **Hybrid Mode**: Seamless switch between configuration and game view
 
 ---
 
 ## How to Play
 
-1. **Start**: Player 0 begins with the ball
+### Configuration Mode
+1. Open `index.html` in your browser
+2. Select number of CPU players (2 or 3) in the Settings panel
+3. View the preview to see player positions
+4. Click "Preview Game" to start playing
+
+### Game Mode
+1. **Start**: Player 0 (P1) begins with the ball at bottom center
 2. **Throw**: Click on any other player to throw the ball
 3. **Catch**: CPU players automatically catch and throw back
 4. **Control**: Move your mouse to change Player 0's look direction when holding the ball
+5. **Back to Config**: Click "Back to Configuration" to return to settings
 
 ---
 

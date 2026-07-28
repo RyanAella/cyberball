@@ -1,18 +1,21 @@
 // ========== PHASER CONFIGURATION ==========
-const config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 500,
-    backgroundColor: '#ffffff',
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: 0 },
-            debug: false
-        }
-    },
-    parent: 'game-container'
-};
+function getGameConfig() {
+    const gameContainer = document.getElementById('game-container');
+    return {
+        type: Phaser.AUTO,
+        width: gameContainer.clientWidth,
+        height: gameContainer.clientHeight,
+        backgroundColor: '#ffffff',
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 0 },
+                debug: false
+            }
+        },
+        parent: 'game-container'
+    };
+}
 
 // ========== GAME SCENE CLASS ==========
 class GameScene extends Phaser.Scene {
@@ -24,19 +27,43 @@ class GameScene extends Phaser.Scene {
     create() {
         this.isCatching = false;
 
-        // Helper function: Ball position at player's hand (behind body)
-        this.getHandPosition = function(player) {
-            const handOffsetX = player.flipX ? -35 : 35;
-            const handOffsetY = -15;
-            return { x: player.x + handOffsetX, y: player.y + handOffsetY };
-        };
-
         // ===== PLAYERS =====
+        // Player positions: P1 always at bottom center
+        // 2 CPUs: CPU 1 left center, CPU 2 right center
+        // 3 CPUs: CPU 1 left center, CPU 2 top center (opposite P1), CPU 3 right center (opposite CPU 1)
+        
+        const cpuCount = window.cyberballConfig?.cpuCount || 2;
+        
+        // Player 0 (user) - always at bottom center
         this.players = [
-            this.physics.add.sprite(400, 400, 'player', 'idle/1.png'), // Player 1
-            this.physics.add.sprite(200, 100, 'player', 'idle/1.png'), // Player 2
-            this.physics.add.sprite(600, 100, 'player', 'idle/1.png')  // Player 3
+            this.physics.add.sprite(400, 500, 'player', 'idle/1.png') // Player 0 (user)
         ];
+
+        // CPU positions based on count
+        let cpuPositions;
+        if (cpuCount === 2) {
+            cpuPositions = [
+                { x: 200, y: 300 },  // CPU 1 - left center
+                { x: 600, y: 300 }   // CPU 2 - right center
+            ];
+        } else if (cpuCount === 3) {
+            cpuPositions = [
+                { x: 200, y: 300 },  // CPU 1 - left center
+                { x: 400, y: 100 },  // CPU 2 - top center (opposite P1)
+                { x: 600, y: 300 }   // CPU 3 - right center (opposite CPU 1)
+            ];
+        } else {
+            cpuPositions = [
+                { x: 200, y: 300 },
+                { x: 600, y: 300 }
+            ];
+        }
+
+        for (let i = 0; i < cpuCount; i++) {
+            this.players.push(
+                this.physics.add.sprite(cpuPositions[i].x, cpuPositions[i].y, 'player', 'idle/1.png')
+            );
+        }
 
         // Scale players and make them immovable
         this.players.forEach(player => {
@@ -47,7 +74,7 @@ class GameScene extends Phaser.Scene {
         });
 
         // ===== PLAYER NAMES =====
-        const playerNames = ["Player 1", "Player 2", "Player 3"];
+        const playerNames = ["Player 1", ...Array.from({length: cpuCount}, (_, i) => `CPU ${i + 1}`)];
         this.players.forEach((player, index) => {
             this.add.text(
                 player.x,
@@ -112,7 +139,7 @@ class GameScene extends Phaser.Scene {
         });
 
 // ===== POSITION FUNCTIONS =====
-        // Ball position when player is holding it (behind body)
+        // Ball position at player's hand (behind body) when holding
         this.getHandPosition = function(player) {
             const handOffsetX = player.flipX ? 40 : -40;  // Ball on opposite side of view direction
             const handOffsetY = -25;                     // Above the head (raised hand)
@@ -272,6 +299,15 @@ class GameScene extends Phaser.Scene {
 }
 
 // ========== START GAME ==========
-const game = new Phaser.Game(config);
-game.scene.add('default', GameScene);
-game.scene.start('default');
+// Only start game if game-container exists and is visible (game mode)
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const gameContainer = document.getElementById('game-container');
+        // Check if container exists and is visible (offsetParent !== null means not display:none)
+        if (gameContainer && gameContainer.offsetParent !== null) {
+            const game = new Phaser.Game(getGameConfig());
+            game.scene.add('default', GameScene);
+            game.scene.start('default');
+        }
+    }, 50);
+});

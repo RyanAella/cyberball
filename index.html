@@ -1,48 +1,532 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberball - Grundgerüst</title>
-    <!-- Phaser von CDN laden (keine Installation nötig!) -->
+    <title>Cyberball</title>
+    <!-- Phaser from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-    <!-- Unser Spiel-Code -->
+    <!-- Game code -->
     <script src="js/game.js" defer></script>
     <style>
-        body {
+        /* ========== RESET & BASE ========== */
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333333;
+            min-height: 100vh;
+        }
+        
+        /* ========== APP CONTAINER ========== */
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
+        }
+        
+        /* ========== HEADER ========== */
+        .header {
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #ffffff; /* 👈 Weißer Hintergrund */
-            font-family: Arial, sans-serif;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
         }
-        h1 {
+        
+        .logo {
+            width: 200px;
+            height: 100px;
+        }
+        
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333333;
+            margin: 0;
+        }
+        
+        /* ========== VIEW CONTROL ========== */
+        .config-view {
+            display: block;
+        }
+        
+        .game-view {
+            display: none;
+        }
+        
+        .config-view.hide {
+            display: none;
+        }
+        
+        .game-view.show {
+            display: block;
+        }
+        
+        /* ========== MAIN CONTENT (CONFIG) ========== */
+        .main-content {
+            display: flex;
+            gap: 40px;
+        }
+        
+        /* ========== GAME PREVIEW (LEFT) ========== */
+        .game-preview {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .field {
+            width: 500px;
+            height: 400px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Player figures */
+        .player {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Player 1 - bottom center */
+        .player:nth-child(1) {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2196F3;
+        }
+        
+        /* Player 2 - top left */
+        .player:nth-child(2) {
+            top: 20px;
+            left: 20%;
+        }
+        
+        /* Player 3 - top right */
+        .player:nth-child(3) {
+            top: 20px;
+            right: 20%;
+        }
+        
+        /* ========== MODAL (RIGHT) ========== */
+        .modal {
+            width: 400px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-header h2 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333333;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .close-modal:hover {
             color: #333;
-            margin-bottom: 10px;
         }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333333;
+            font-size: 16px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #333333;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group label {
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        /* Settings section */
+        .settings-section {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+        }
+        
+        .settings-section h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333333;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .radio-option input[type="radio"] {
+            cursor: pointer;
+        }
+        
+        .radio-option label {
+            font-weight: normal;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        /* ========== GAME VIEW (PHASER) ========== */
+        .game-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .game-info {
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+        }
+        
         #game-container {
             width: 800px;
-            height: 500px;
-            background-color: #ffffff; /* 👈 Weißer Hintergrund */
+            height: 600px;
+            background-color: #ffffff;
             border: 2px solid #333;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
         }
-        .info {
-            text-align: center;
-            color: #666;
-            max-width: 800px;
+        
+        .back-to-config {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .back-to-config:hover {
+            background-color: #5a6268;
         }
     </style>
 </head>
 <body>
-<h1>Cyberball - Grundgerüst</h1>
-<div id="game-container"></div>
-<div class="info">
-    <p>Klicke auf einen Spieler, um den Ball zu werfen!</p>
-</div>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="logo">
+                <img src="assets/player.png" alt="CyberballOS Logo" />
+            </div>
+            <h1>CyberballOS Configuration Builder</h1>
+        </header>
+        
+        <!-- CONFIG VIEW (shown by default) -->
+        <div id="config-view" class="config-view">
+            <main class="main-content">
+                <!-- GAME PREVIEW (LEFT) -->
+                <div class="game-preview">
+                    <div class="field" id="field-preview">
+                        <!-- Players will be added by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- MODAL (RIGHT) -->
+                <div class="modal">
+                    <div class="modal-header">
+                        <h2>Settings</h2>
+                        <button class="close-modal" id="closeModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="config-form">
+                            <!-- CPU Settings -->
+                            <div class="settings-section">
+                                <h3>CPU Players</h3>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="cpus2" name="cpus" value="2" checked />
+                                        <label for="cpus2">2 CPUs</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="cpus3" name="cpus" value="3" />
+                                        <label for="cpus3">3 CPUs</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="previewBtn">Preview Game</button>
+                        <button type="button" class="btn btn-secondary" id="exitBtn">Exit</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- GAME VIEW (shown when ?cpus=N in URL) -->
+        <div id="game-view" class="game-view">
+            <div class="game-wrapper">
+                <div class="game-info">
+                    <p>Click on a player to throw the ball!</p>
+                </div>
+                <div id="game-container"></div>
+                <button class="back-to-config" id="backBtn">Back to Configuration</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasCpusParam = urlParams.has('cpus');
+        let cpuCount = parseInt(urlParams.get('cpus')) || 2;
+        cpuCount = Math.min(Math.max(cpuCount, 2), 3);
+        
+        // ========== INITIALIZE VIEW ==========
+        // If URL has cpus parameter, show game view
+        // Otherwise show config view
+        const configView = document.getElementById('config-view');
+        const gameView = document.getElementById('game-view');
+        
+        if (hasCpusParam) {
+            configView.classList.add('hide');
+            gameView.classList.add('show');
+            
+            // Set config for game.js
+            window.cyberballConfig = { cpuCount: cpuCount };
+        } else {
+            configView.classList.remove('hide');
+            gameView.classList.remove('show');
+            
+            // ========== CONFIG VIEW LOGIC ==========
+            // Set radio button
+            document.querySelector(`input[name="cpus"][value="${cpuCount}"]`).checked = true;
+            
+            // Update preview based on CPU count
+            function updatePreview() {
+                const field = document.getElementById('field-preview');
+                field.innerHTML = '';
+                
+                // Always show Player 1 (user) at bottom center
+                const player1 = document.createElement('div');
+                player1.className = 'player';
+                player1.textContent = 'P1';
+                player1.style.bottom = '20px';
+                player1.style.left = '50%';
+                player1.style.transform = 'translateX(-50%)';
+                player1.style.backgroundColor = '#2196F3';
+                field.appendChild(player1);
+                
+                // Show all players (P1 + CPUs)
+                // P1 is always at bottom center
+                // 2 CPUs: CPU 1 left, CPU 2 right (opposite of P1)
+                // 3 CPUs: CPU 1 left, CPU 2 opposite of P1 (top center), CPU 3 right (opposite of CPU 1)
+                
+                if (cpuCount === 2) {
+                    // 2 CPUs: CPU 1 left, CPU 2 right
+                    const cpuPositions = [
+                        { top: '50%', left: '20%', transform: 'translateY(-50%)' },   // CPU 1 - left center
+                        { top: '50%', right: '20%', transform: 'translateY(-50%)' }  // CPU 2 - right center
+                    ];
+                    for (let i = 0; i < cpuCount; i++) {
+                        const cpu = document.createElement('div');
+                        cpu.className = 'player';
+                        cpu.textContent = `CPU ${i + 1}`;
+                        cpu.style.top = cpuPositions[i].top;
+                        cpu.style.left = cpuPositions[i].left;
+                        cpu.style.right = cpuPositions[i].right;
+                        if (cpuPositions[i].transform) {
+                            cpu.style.transform = cpuPositions[i].transform;
+                        }
+                        field.appendChild(cpu);
+                    }
+                } else if (cpuCount === 3) {
+                    // 3 CPUs: CPU 1 left, CPU 2 top center (opposite P1), CPU 3 right (opposite CPU 1)
+                    const cpuPositions = [
+                        { top: '50%', left: '20%', transform: 'translateY(-50%)' },   // CPU 1 - left center
+                        { top: '20px', left: '50%', transform: 'translateX(-50%)' }, // CPU 2 - top center (opposite P1)
+                        { top: '50%', right: '20%', transform: 'translateY(-50%)' }  // CPU 3 - right center (opposite CPU 1)
+                    ];
+                    for (let i = 0; i < cpuCount; i++) {
+                        const cpu = document.createElement('div');
+                        cpu.className = 'player';
+                        cpu.textContent = `CPU ${i + 1}`;
+                        cpu.style.top = cpuPositions[i].top;
+                        cpu.style.left = cpuPositions[i].left;
+                        cpu.style.right = cpuPositions[i].right;
+                        if (cpuPositions[i].transform) {
+                            cpu.style.transform = cpuPositions[i].transform;
+                        }
+                        field.appendChild(cpu);
+                    }
+                }
+            }
+            
+            // Update preview when CPU count changes
+            document.querySelectorAll('input[name="cpus"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    cpuCount = parseInt(radio.value);
+                    updatePreview();
+                });
+            });
+            
+            // Preview Game button - show game view
+            document.getElementById('previewBtn').addEventListener('click', () => {
+                const selectedCpus = document.querySelector('input[name="cpus"]:checked').value;
+                
+                // Build URL with parameters and reload
+                const params = new URLSearchParams({
+                    cpus: selectedCpus
+                });
+                window.location.search = params.toString();
+            });
+            
+            // Exit button
+            document.getElementById('exitBtn').addEventListener('click', () => {
+                if (confirm('Exit configuration?')) {
+                    window.close();
+                }
+            });
+            
+            // Close modal button
+            document.getElementById('closeModal').addEventListener('click', () => {
+                if (confirm('Close configuration?')) {
+                    window.close();
+                }
+            });
+            
+            // Initialize preview
+            updatePreview();
+            
+            // Set config for game.js (in case it's needed)
+            window.cyberballConfig = { cpuCount: cpuCount };
+        }
+        
+        // ========== GAME VIEW LOGIC ==========
+        // Back to config button
+        document.getElementById('backBtn')?.addEventListener('click', () => {
+            // Remove cpus parameter to show config
+            const params = new URLSearchParams(window.location.search);
+            params.delete('cpus');
+            params.delete('player1');
+            window.location.search = params.toString();
+        });
+    </script>
 </body>
 </html>

@@ -356,21 +356,6 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        
-        .back-to-config {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .back-to-config:hover {
-            background-color: #5a6268;
-        }
     </style>
 </head>
 <body>
@@ -503,7 +488,6 @@
                     <p>Click on a player to throw the ball!</p>
                 </div>
                 <div id="game-container"></div>
-                <button class="back-to-config" id="backBtn">Back to Configuration</button>
             </div>
         </div>
     </div>
@@ -519,27 +503,53 @@
         const configView = document.getElementById('config-view');
         const gameView = document.getElementById('game-view');
         
-        if (hasCpusParam) {
-            configView.classList.add('hide');
-            gameView.classList.add('show');
-            window.cyberballConfig = { cpuCount: cpuCount };
-            
-            // Back to config button - only available in game view
-            document.getElementById('backBtn')?.addEventListener('click', () => {
-                const params = new URLSearchParams(window.location.search);
-                params.delete('cpus');
-                params.delete('bg');
-                params.delete('bgType');
-                params.delete('playerColor');
-                params.delete('pname');
-                window.location.search = params.toString();
-            });
-        } else {
-            configView.classList.remove('hide');
-            gameView.classList.remove('show');
+        // Always show config view on page load/refresh
+        // Game view is only shown when explicitly navigating via Preview Game button
+        configView.classList.remove('hide');
+        gameView.classList.remove('show');
             
             // ========== CONFIG VIEW LOGIC ==========
-            document.querySelector(`input[name="cpus"][value="${cpuCount}"]`).checked = true;
+            // Pre-fill form fields from URL parameters if present
+            if (hasCpusParam) {
+                const cpusParam = urlParams.get('cpus') || '2';
+                document.querySelector(`input[name="cpus"][value="${cpusParam}"]`).checked = true;
+                cpuCount = parseInt(cpusParam);
+                
+                // Pre-fill background settings
+                const bgTypeParam = urlParams.get('bgType') || 'color';
+                const bgParam = urlParams.get('bg') || '#f5f5f5';
+                if (bgTypeParam) {
+                    document.querySelector(`input[name="bgType"][value="${bgTypeParam}"]`).checked = true;
+                    if (bgTypeParam === 'color') {
+                        document.getElementById('bgColorValue').value = bgParam;
+                    } else {
+                        document.getElementById('bgImageUrl').value = decodeURIComponent(bgParam);
+                    }
+                }
+                
+                // Pre-fill player color and name
+                const playerColorParam = urlParams.get('playerColor');
+                if (playerColorParam) {
+                    document.getElementById('playerColor').value = playerColorParam;
+                    document.getElementById('customizeCheckbox').checked = true;
+                    document.getElementById('customizeSection').style.display = 'block';
+                }
+                
+                const playerNameParam = urlParams.get('pname');
+                if (playerNameParam) {
+                    document.getElementById('participantName').value = playerNameParam;
+                }
+            } else {
+                document.querySelector(`input[name="cpus"][value="${cpuCount}"]`).checked = true;
+            }
+            
+            // Initialize preview with current form values (including any pre-filled from URL)
+            setTimeout(() => {
+                previewConfig = getPreviewConfig();
+                if (window.previewGame) {
+                    window.previewGame.updateConfig(previewConfig);
+                }
+            }, 100);
             
             const participantContent = document.getElementById('participantContent');
             const cpuSettingsContent = document.getElementById('cpuSettingsContent');
@@ -855,7 +865,7 @@
                 });
             });
             
-            // Preview Game button
+            // Preview Game button - show game view without reloading
             document.getElementById('previewBtn').addEventListener('click', () => {
                 const selectedCpus = document.querySelector('input[name="cpus"]:checked')?.value || '2';
                 const bgType = document.querySelector('input[name="bgType"]:checked')?.value || 'color';
@@ -864,6 +874,7 @@
                 const playerColor = document.getElementById('playerColor')?.value || '#FFFFFF';
                 const playerName = document.getElementById('participantName')?.value || 'Player 1';
                 
+                // Update URL with parameters for Copy Link functionality
                 const params = new URLSearchParams({
                     cpus: selectedCpus
                 });
@@ -884,7 +895,40 @@
                     params.set('pname', playerName);
                 }
                 
-                window.location.search = params.toString();
+                window.history.pushState({}, '', `?${params.toString()}`);
+                
+                // Show game view
+                configView.classList.add('hide');
+                gameView.classList.add('show');
+                
+                // Set config for game.js
+                window.cyberballConfig = {
+                    cpuCount: parseInt(selectedCpus),
+                    bgType: bgType,
+                    bg: bgType === 'color' ? bgColor : bgImageUrl,
+                    playerColor: document.getElementById('customizeCheckbox')?.checked ? playerColor : '#FFFFFF',
+                    playerName: playerName
+                };
+                
+                // Set trigger and start game
+                window.cyberballGameTrigger = true;
+                
+                // Start the game
+                const gameContainer = document.getElementById('game-container');
+                if (gameContainer) {
+                    // Destroy existing game instance if any
+                    if (window.cyberballGameInstance) {
+                        window.cyberballGameInstance.destroy(true);
+                        window.cyberballGameInstance = null;
+                    }
+                    
+                    // Ensure game.js is loaded
+                    if (window.GameScene && window.getGameConfig) {
+                        window.cyberballGameInstance = new Phaser.Game(window.getGameConfig());
+                        window.cyberballGameInstance.scene.add('default', window.GameScene);
+                        window.cyberballGameInstance.scene.start('default');
+                    }
+                }
             });
             
             

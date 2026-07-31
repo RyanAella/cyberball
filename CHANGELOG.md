@@ -2,6 +2,18 @@
 
 All notable changes to the Cyberball game.
 
+---
+
+## [0.5.0] – 2026-07-31
+
+### Added
+- URL parameters pre-fill configuration form when page is opened with a shared link
+
+### Removed
+- Back to Configuration button from game view (users can only play with preset configuration)
+
+---
+
 ## [0.4.1] – 2026-07-31
 
 ### Added

@@ -28,13 +28,19 @@ A simple Phaser 3 based ball passing game with configurable player setup. Featur
 5. Change Player 1 name in the input field
 6. View the live preview to see player positions, colors, and names
 7. Click "Preview Game" to start playing
+8. Click "Copy Link" to share your configuration with others
 
 ### Game Mode
 1. **Start**: Player 0 (P1) begins with the ball at bottom center, displayed with active animation
 2. **Throw**: Click on any other player to throw the ball
 3. **Catch**: CPU players automatically catch and throw back, displayed with idle animation
 4. **Control**: Move your mouse to change Player 0's look direction when holding the ball
-5. **Back to Config**: Click "Back to Configuration" to return to settings
+
+### Sharing Configurations
+- Use "Copy Link" to generate a shareable URL with all your settings
+- When a user opens the link, they see the configuration view with your settings pre-filled
+- They can then click "Preview Game" to play with your settings
+- Users cannot modify the configuration once in game view (no back button)
 
 ---
 

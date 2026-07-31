@@ -1,5 +1,5 @@
 // ========== PHASER CONFIGURATION ==========
-function getGameConfig() {
+window.getGameConfig = function getGameConfig() {
     const gameContainer = document.getElementById('game-container');
     return {
         type: Phaser.AUTO,
@@ -18,7 +18,7 @@ function getGameConfig() {
 }
 
 // ========== GAME SCENE CLASS ==========
-class GameScene extends Phaser.Scene {
+window.GameScene = class GameScene extends Phaser.Scene {
     preload() {
         this.load.setBaseURL('assets/');
         this.load.image('ball', 'ball.png');
@@ -340,15 +340,13 @@ class GameScene extends Phaser.Scene {
 }
 
 // ========== START GAME ==========
-// Only start game if game-container exists and is visible (game mode)
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        const gameContainer = document.getElementById('game-container');
-        // Check if container exists and is visible (offsetParent !== null means not display:none)
-        if (gameContainer && gameContainer.offsetParent !== null) {
-            const game = new Phaser.Game(getGameConfig());
-            game.scene.add('default', GameScene);
-            game.scene.start('default');
-        }
-    }, 50);
-});
+// Start game only when explicitly triggered via Preview Game button
+// window.cyberballGameTrigger indicates the game should start
+if (window.cyberballGameTrigger) {
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        const game = new Phaser.Game(getGameConfig());
+        game.scene.add('default', GameScene);
+        game.scene.start('default');
+    }
+}

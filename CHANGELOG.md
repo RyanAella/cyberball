@@ -2,6 +2,15 @@
 
 All notable changes to the Cyberball game.
 
+## [0.4.0] – 2026-07-31
+
+### Fixed
+- Navigation between Participant and CPU Settings works correctly
+- CPU player name labels in preview no longer overlap when switching between 2/3 CPUs
+- Modal title preserves help button when switching between settings
+
+---
+
 ## [0.3.0] – 2026-07-31
 
 ### Added
@@ -43,6 +52,8 @@ All notable changes to the Cyberball game.
 ### Fixed
 - Preview now correctly displays selected number of CPUs
 - Game initialization only starts when game container is visible
+- Navigation between Participant and CPU Settings works correctly
+- CPU player name labels in preview no longer overlap when switching between 2/3 CPUs
 
 ---
 

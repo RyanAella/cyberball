@@ -22,9 +22,11 @@ A simple Phaser 3 based ball passing game with configurable player setup. Featur
 
 ### Configuration Mode
 1. Open `index.html` in your browser
-2. Select number of CPU players (2 or 3) in the Settings panel
-3. View the preview to see player positions
-4. Click "Preview Game" to start playing
+2. Navigate between **Participant** and **CPU Settings** using the arrow button
+3. Select number of CPU players (2 or 3)
+4. Customize player color using the color picker (when Customize is enabled)
+5. View the live preview to see player positions and colors
+6. Click "Preview Game" to start playing
 
 ### Game Mode
 1. **Start**: Player 0 (P1) begins with the ball at bottom center

@@ -548,15 +548,17 @@
             // Navigation between Participant and CPU Settings
             navArrow.addEventListener('click', () => {
                 if (participantContent.classList.contains('active')) {
-                    cpuSettingsContent.classList.remove('active');
-                    participantContent.classList.add('active');
-                    modalTitle.textContent = 'Participant';
-                    navArrow.textContent = '▶';
-                } else {
+                    // Switch TO CPU Settings
                     participantContent.classList.remove('active');
                     cpuSettingsContent.classList.add('active');
-                    modalTitle.textContent = 'CPUs';
+                    modalTitle.innerHTML = 'CPUs <span class="help-button" title="Help">?</span>';
                     navArrow.textContent = '◀';
+                } else {
+                    // Switch TO Participant
+                    cpuSettingsContent.classList.remove('active');
+                    participantContent.classList.add('active');
+                    modalTitle.innerHTML = 'Participant <span class="help-button" title="Help">?</span>';
+                    navArrow.textContent = '▶';
                 }
             });
             
@@ -630,6 +632,7 @@
                 create() {
                     this.players = [];
                     this.ball = null;
+                    this.texts = [];
                     this.config = {
                         cpuCount: 2,
                         bgType: 'color',
@@ -660,6 +663,8 @@
                 
                 updateScene() {
                     this.players.forEach(p => p.destroy());
+                    this.texts.forEach(t => t.destroy());
+                    this.texts = [];
                     if (this.ball) { this.ball.destroy(); this.ball = null; }
                     this.players = [];
                     
@@ -690,7 +695,8 @@
                     const tint = parseInt(colorHex, 16);
                     player0.setTint(tint);
                     this.players.push(player0);
-                    this.add.text(player0X, player0Y + 50 * scaleY, 'Player 1', { fontFamily: 'Arial', fontSize: '12px', color: '#000000' }).setOrigin(0.5);
+                    const player1Text = this.add.text(player0X, player0Y + 50 * scaleY, 'Player 1', { fontFamily: 'Arial', fontSize: '12px', color: '#000000' }).setOrigin(0.5);
+                    this.texts.push(player1Text);
                     
                     // Ball at hand position - using game's getHandPosition logic
                     // In game: handOffsetX = -40, handOffsetY = -25 (player0.flipX = false)
@@ -724,7 +730,8 @@
                             cpu.setScale(scale);
                             cpu.play('idle');
                             this.players.push(cpu);
-                            this.add.text(cpuPositions[i].x, cpuPositions[i].y + 50 * scaleY, `CPU ${i + 1}`, { fontFamily: 'Arial', fontSize: '12px', color: '#000000' }).setOrigin(0.5);
+                            const cpuText = this.add.text(cpuPositions[i].x, cpuPositions[i].y + 50 * scaleY, `CPU ${i + 1}`, { fontFamily: 'Arial', fontSize: '12px', color: '#000000' }).setOrigin(0.5);
+                            this.texts.push(cpuText);
                         }
                     }
                 }

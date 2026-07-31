@@ -2,6 +2,26 @@
 
 All notable changes to the Cyberball game.
 
+## [0.3.0] – 2026-07-31
+
+### Added
+- Phaser-based preview in configuration view (replaces CSS preview)
+- Live preview updates when settings change (CPU count, background, player color)
+- Player color customization via color picker
+- Copy Link button to share configuration
+
+### Changed
+- Default player color changed from blue (#2196F3) to white (#FFFFFF)
+- Preview now uses same rendering as the actual game (Phaser sprites)
+- Player 0 displays with active animation and ball in preview
+- CPU players display with idle animation in preview
+
+### Removed
+- Exit button from configuration view
+- CSS-based preview (replaced with Phaser)
+
+---
+
 ## [0.2.0] – 2026-07-28
 
 ### Added

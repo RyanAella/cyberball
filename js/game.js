@@ -20,12 +20,42 @@ function getGameConfig() {
 // ========== GAME SCENE CLASS ==========
 class GameScene extends Phaser.Scene {
     preload() {
-        this.load.image('ball', 'assets/ball.png');
-        this.load.multiatlas('player', 'assets/player.json', 'assets');
+        this.load.setBaseURL('assets/');
+        this.load.image('ball', 'ball.png');
+        this.load.multiatlas('player', 'player.json');
+        
+        // Preload background image if specified in URL
+        const bgUrlParams = new URLSearchParams(window.location.search);
+        const bgType = bgUrlParams.get('bgType');
+        const bgValue = bgUrlParams.get('bg');
+        
+        if (bgType === 'image' && bgValue) {
+            this.load.image('background', decodeURIComponent(bgValue));
+        }
     }
 
     create() {
         this.isCatching = false;
+
+        // ===== BACKGROUND =====
+        // Read background settings from URL or use defaults
+        const bgUrlParams = new URLSearchParams(window.location.search);
+        const bgType = bgUrlParams.get('bgType') || 'color';
+        const bgValue = bgUrlParams.get('bg') || '#f5f5f5';
+        
+        // Set background based on type
+        if (bgType === 'color') {
+            this.cameras.main.setBackgroundColor(bgValue);
+        } else if (bgType === 'image' && bgValue) {
+            // Add background image (preloaded in preload())
+            const bg = this.add.image(400, 300, 'background');
+            bg.setDisplaySize(800, 600);
+            bg.setDepth(-100); // Behind everything
+            bg.setOrigin(0.5, 0.5);
+        } else {
+            // Default background color
+            this.cameras.main.setBackgroundColor('#f5f5f5');
+        }
 
         // ===== PLAYERS =====
         // Player positions: P1 always at bottom center
@@ -33,11 +63,21 @@ class GameScene extends Phaser.Scene {
         // 3 CPUs: CPU 1 left center, CPU 2 top center (opposite P1), CPU 3 right center (opposite CPU 1)
         
         const cpuCount = window.cyberballConfig?.cpuCount || 2;
+        const urlParams = new URLSearchParams(window.location.search);
+        const playerColor = urlParams.get('playerColor') || '#FFFFFF';
+        
+        // Convert hex color to Phaser tint value (remove # and convert to number)
+        const playerTint = playerColor.startsWith('#') ? 
+            parseInt(playerColor.slice(1), 16) : 
+            parseInt(playerColor, 16);
         
         // Player 0 (user) - always at bottom center
         this.players = [
             this.physics.add.sprite(400, 500, 'player', 'idle/1.png') // Player 0 (user)
         ];
+        
+        // Always apply player color tint (either custom or default #2196F3)
+        this.players[0].setTint(playerTint);
 
         // CPU positions based on count
         let cpuPositions;

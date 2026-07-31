@@ -13,6 +13,8 @@ A simple Phaser 3 based ball passing game with configurable player setup. Featur
 - **Visual Feedback**: Ball appears in front of body when catching, behind when holding
 - **Configuration Builder**: Set number of CPU players (2 or 3) before starting the game
 - **Hybrid Mode**: Seamless switch between configuration and game view
+- **Player Customization**: Customize player color via color picker
+- **Live Preview**: Phaser-based preview showing exact game appearance with selected settings
 
 ---
 

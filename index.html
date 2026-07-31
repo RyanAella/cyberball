@@ -401,11 +401,11 @@
                     <!-- Participant Content (default) -->
                     <div class="settings-content active" id="participantContent">
                         <div class="modal-body">
-                            <form class="participant-form">
+                            <form class="participant-form" onsubmit="return false;">
                                 <!-- Name -->
                                 <div class="form-group">
                                     <label>Name</label>
-                                    <input type="text" id="participantName" class="input-field" value="Player 1" disabled />
+                                    <input type="text" id="participantName" class="input-field" value="Player 1" placeholder="Enter player name" />
                                 </div>
                                 
                                 <!-- Customize -->
@@ -435,7 +435,7 @@
                     <!-- CPU Settings Content (hidden by default) -->
                     <div class="settings-content" id="cpuSettingsContent">
                         <div class="modal-body">
-                            <form class="participant-form">
+                            <form class="participant-form" onsubmit="return false;">
                                 <!-- CPU Settings -->
                                 <div class="settings-section">
                                     <h3>CPU Players</h3>
@@ -457,7 +457,7 @@
                     <!-- Background Settings Content (hidden by default) -->
                     <div class="settings-content" id="bgSettingsContent">
                         <div class="modal-body">
-                            <form class="participant-form">
+                            <form class="participant-form" onsubmit="return false;">
                                 <!-- Background Settings -->
                                 <div class="settings-section">
                                     <h3>Background</h3>
@@ -531,6 +531,7 @@
                 params.delete('bg');
                 params.delete('bgType');
                 params.delete('playerColor');
+                params.delete('pname');
                 window.location.search = params.toString();
             });
         } else {
@@ -592,6 +593,8 @@
             document.getElementById('bgImageUrl')?.addEventListener('input', updatePreviewConfig);
             document.getElementById('playerColor')?.addEventListener('input', updatePreviewConfig);
             document.getElementById('playerColor')?.addEventListener('change', updatePreviewConfig);
+            document.getElementById('participantName')?.addEventListener('input', updatePreviewConfig);
+            document.getElementById('participantName')?.addEventListener('change', updatePreviewConfig);
             
             // Preview configuration object
             let previewConfig = {
@@ -609,7 +612,8 @@
                     bgType: document.querySelector('input[name="bgType"]:checked')?.value || 'color',
                     bgColor: document.getElementById('bgColorValue')?.value || '#f5f5f5',
                     bgImageUrl: document.getElementById('bgImageUrl')?.value || '',
-                    playerColor: document.getElementById('playerColor')?.value || '#FFFFFF'
+                    playerColor: document.getElementById('playerColor')?.value || '#FFFFFF',
+                    playerName: document.getElementById('participantName')?.value || 'Player 1'
                 };
             }
             
@@ -638,7 +642,8 @@
                         bgType: 'color',
                         bgColor: '#f5f5f5',
                         bgImageUrl: '',
-                        playerColor: '#FFFFFF'
+                        playerColor: '#FFFFFF',
+                        playerName: 'Player 1'
                     };
                     
                     // Set background
@@ -695,7 +700,8 @@
                     const tint = parseInt(colorHex, 16);
                     player0.setTint(tint);
                     this.players.push(player0);
-                    const player1Text = this.add.text(player0X, player0Y + 50 * scaleY, 'Player 1', { fontFamily: 'Arial', fontSize: '12px', color: '#000000' }).setOrigin(0.5);
+                    const playerName = this.config.playerName || 'Player 1';
+                    const player1Text = this.add.text(player0X, player0Y + 50 * scaleY, playerName, { fontFamily: 'Arial', fontSize: '12px', color: '#000000' }).setOrigin(0.5);
                     this.texts.push(player1Text);
                     
                     // Ball at hand position - using game's getHandPosition logic
@@ -811,6 +817,7 @@
                 const bgColor = document.getElementById('bgColorValue')?.value || '#f5f5f5';
                 const bgImageUrl = document.getElementById('bgImageUrl')?.value;
                 const playerColor = document.getElementById('playerColor')?.value || '#FFFFFF';
+                const playerName = document.getElementById('participantName')?.value || 'Player 1';
                 
                 const params = new URLSearchParams({
                     cpus: selectedCpus
@@ -826,6 +833,10 @@
                 
                 if (document.getElementById('customizeCheckbox')?.checked) {
                     params.set('playerColor', playerColor);
+                }
+                
+                if (playerName && playerName !== 'Player 1') {
+                    params.set('pname', playerName);
                 }
                 
                 const baseUrl = window.location.href.split('?')[0];
@@ -851,6 +862,7 @@
                 const bgColor = document.getElementById('bgColorValue')?.value || '#f5f5f5';
                 const bgImageUrl = document.getElementById('bgImageUrl')?.value;
                 const playerColor = document.getElementById('playerColor')?.value || '#FFFFFF';
+                const playerName = document.getElementById('participantName')?.value || 'Player 1';
                 
                 const params = new URLSearchParams({
                     cpus: selectedCpus
@@ -866,6 +878,10 @@
                 
                 if (document.getElementById('customizeCheckbox')?.checked) {
                     params.set('playerColor', playerColor);
+                }
+                
+                if (playerName && playerName !== 'Player 1') {
+                    params.set('pname', playerName);
                 }
                 
                 window.location.search = params.toString();

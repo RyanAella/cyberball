@@ -65,6 +65,7 @@ class GameScene extends Phaser.Scene {
         const cpuCount = window.cyberballConfig?.cpuCount || 2;
         const urlParams = new URLSearchParams(window.location.search);
         const playerColor = urlParams.get('playerColor') || '#FFFFFF';
+        const playerName = urlParams.get('pname') || 'Player 1';
         
         // Convert hex color to Phaser tint value (remove # and convert to number)
         const playerTint = playerColor.startsWith('#') ? 
@@ -73,7 +74,7 @@ class GameScene extends Phaser.Scene {
         
         // Player 0 (user) - always at bottom center
         this.players = [
-            this.physics.add.sprite(400, 500, 'player', 'idle/1.png') // Player 0 (user)
+            this.physics.add.sprite(400, 500, 'player', 'active/1.png') // Player 0 (user)
         ];
         
         // Always apply player color tint (either custom or default #2196F3)
@@ -114,7 +115,7 @@ class GameScene extends Phaser.Scene {
         });
 
         // ===== PLAYER NAMES =====
-        const playerNames = ["Player 1", ...Array.from({length: cpuCount}, (_, i) => `CPU ${i + 1}`)];
+        const playerNames = [playerName, ...Array.from({length: cpuCount}, (_, i) => `CPU ${i + 1}`)];
         this.players.forEach((player, index) => {
             this.add.text(
                 player.x,

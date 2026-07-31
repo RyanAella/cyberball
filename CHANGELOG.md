@@ -2,6 +2,19 @@
 
 All notable changes to the Cyberball game.
 
+## [0.4.1] – 2026-07-31
+
+### Added
+- Customizable Player 1 name via input field in Participant settings
+- Player name is reflected in both preview and game
+- Copy Link and Preview Game buttons pass custom player name as `pname` parameter
+
+### Fixed
+- Form submission no longer reloads page when pressing Enter in name field
+- Preview updates live when player name is changed
+
+---
+
 ## [0.4.0] – 2026-07-31
 
 ### Fixed

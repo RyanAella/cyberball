@@ -4,6 +4,14 @@ All notable changes to the Cyberball game.
 
 ---
 
+## [0.5.1] – 2026-07-31
+
+### Fixed
+- Syntax error in index.html that prevented player name customization from working
+- Player name now properly updates in preview when changed
+
+---
+
 ## [0.5.0] – 2026-07-31
 
 ### Added

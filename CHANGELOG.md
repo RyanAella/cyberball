@@ -4,6 +4,14 @@ All notable changes to the Cyberball game.
 
 ---
 
+## [0.5.2] – 2026-08-21
+
+### Fixed
+- Player color now correctly resets to default (#FFFFFF) when Customize checkbox is unchecked
+- Player color is only applied in preview and game when Customize is enabled
+
+---
+
 ## [0.5.1] – 2026-07-31
 
 ### Fixed

@@ -578,6 +578,10 @@
                 const isChecked = document.getElementById('customizeCheckbox').checked;
                 document.getElementById('customizeSection').style.display = 
                     isChecked ? 'block' : 'none';
+                if (!isChecked) {
+                    // Reset color to default when customize is disabled
+                    document.getElementById('playerColor').value = '#FFFFFF';
+                }
                 updatePreviewConfig();
             });
             
@@ -617,12 +621,13 @@
             };
             
             function getPreviewConfig() {
+                const customizeEnabled = document.getElementById('customizeCheckbox')?.checked || false;
                 return {
                     cpuCount: parseInt(document.querySelector('input[name="cpus"]:checked')?.value) || cpuCount,
                     bgType: document.querySelector('input[name="bgType"]:checked')?.value || 'color',
                     bgColor: document.getElementById('bgColorValue')?.value || '#f5f5f5',
                     bgImageUrl: document.getElementById('bgImageUrl')?.value || '',
-                    playerColor: document.getElementById('playerColor')?.value || '#FFFFFF',
+                    playerColor: customizeEnabled ? (document.getElementById('playerColor')?.value || '#FFFFFF') : '#FFFFFF',
                     playerName: document.getElementById('participantName')?.value || 'Player 1'
                 };
             }

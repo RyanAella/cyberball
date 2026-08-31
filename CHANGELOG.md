@@ -4,10 +4,31 @@ All notable changes to the Cyberball game.
 
 ---
 
+## [0.6.0] – 2026-08-31
+
+### Added
+- **Background customization**: Users can now set custom background images via URL parameter or direct input
+- **Image URL field** in configuration settings for easy background image selection
+- **Dynamic background loading**: Preview and game now support external image URLs (e.g., from Imgur, Pexels)
+- **Live preview updates** for background changes (color and image)
+
+### Changed
+- Preview now uses Phaser's native image loading for better compatibility
+- Default background color changed to `#f5f5f5` (light gray)
+- Background images are scaled to fit the preview/game container
+
+### Fixed
+- Black background with green border issue when loading external images
+- Old background images remaining visible when switching to new URLs
+- Texture loading errors for external image URLs
+- Preview not updating when background settings change
+
+---
+
 ## [0.5.2] – 2026-08-21
 
 ### Fixed
-- Player color now correctly resets to default (#FFFFFF) when Customize checkbox is unchecked
+- Player color now correctly resets to default (`#FFFFFF`) when Customize checkbox is unchecked
 - Player color is only applied in preview and game when Customize is enabled
 
 ---
@@ -45,15 +66,6 @@ All notable changes to the Cyberball game.
 
 ## [0.4.0] – 2026-07-31
 
-### Fixed
-- Navigation between Participant and CPU Settings works correctly
-- CPU player name labels in preview no longer overlap when switching between 2/3 CPUs
-- Modal title preserves help button when switching between settings
-
----
-
-## [0.3.0] – 2026-07-31
-
 ### Added
 - Phaser-based preview in configuration view (replaces CSS preview)
 - Live preview updates when settings change (CPU count, background, player color)
@@ -61,7 +73,7 @@ All notable changes to the Cyberball game.
 - Copy Link button to share configuration
 
 ### Changed
-- Default player color changed from blue (#2196F3) to white (#FFFFFF)
+- Default player color changed from blue (`#2196F3`) to white (`#FFFFFF`)
 - Preview now uses same rendering as the actual game (Phaser sprites)
 - Player 0 displays with active animation and ball in preview
 - CPU players display with idle animation in preview
@@ -72,11 +84,11 @@ All notable changes to the Cyberball game.
 
 ---
 
-## [0.2.0] – 2026-07-28
+## [0.3.0] – 2026-07-31
 
 ### Added
 - Configuration builder with settings panel (CPU count: 2 or 3)
-- Hybrid page: configuration mode (no URL params) and game mode (?cpus=N)
+- Hybrid page: configuration mode (no URL params) and game mode (`?cpus=N`)
 - Visual preview showing player positions before starting
 - CyberballOS-style header with logo and title
 - Back to Configuration button in game view
@@ -98,7 +110,7 @@ All notable changes to the Cyberball game.
 
 ---
 
-## [0.1.0] – 2026-07-28
+## [0.2.0] – 2026-07-28
 
 ### Added
 - Basic ball catching and throwing mechanics
@@ -123,6 +135,3 @@ All notable changes to the Cyberball game.
 - Improved animation state management
 
 ---
-
-## [Unreleased]
-*[For future changes]*

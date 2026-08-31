@@ -3,942 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyberball</title>
-    <!-- Phaser from CDN -->
+    <title>CyberballOS Configuration Builder</title>
+    <!-- Phaser CDN (MUSS ZUERST) -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-    <!-- Game code -->
-    <script src="js/game.js" defer></script>
+    <!-- Game Scene -->
+    <script src="js/game.js"></script>
+    <!-- Preview Scene (OHNE defer!) -->
+    <script src="js/preview.js"></script>
     <style>
-        /* ========== RESET & BASE ========== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #333333;
-            min-height: 100vh;
-        }
-        
-        /* ========== APP CONTAINER ========== */
-        .app-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        /* ========== HEADER ========== */
-        .header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 30px;
-            padding: 20px 0;
-            border-bottom: 1px solid #ddd;
-            text-align: center;
-        }
-        
-        .logo {
-            width: 200px;
-            height: 100px;
-        }
-        
-        .logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        
-        .header h1 {
-            font-size: 48px;
-            font-weight: bold;
-            color: #333333;
-            margin: 0;
-        }
-        
-        /* ========== VIEW CONTROL ========== */
-        .config-view {
-            display: block;
-        }
-        
-        .game-view {
-            display: none;
-        }
-        
-        .config-view.hide {
-            display: none;
-        }
-        
-        .game-view.show {
-            display: block;
-        }
-        
-        /* ========== MAIN CONTENT (CONFIG) ========== */
-        .main-content {
-            display: flex;
-            gap: 40px;
-        }
-        
-        /* ========== GAME PREVIEW (LEFT) ========== */
-        .game-preview {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-        }
-        
-        #preview-container {
-            width: 500px;
-            height: 400px;
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        /* Player figures */
-        .player {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            background-color: #4CAF50;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* ========== MODAL (RIGHT) ========== */
-        .modal {
-            width: 500px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            padding: 20px;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .modal-header h2 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333333;
-        }
-        
-        .help-button {
-            width: 28px;
-            height: 28px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .help-button:hover {
-            background-color: #0056b3;
-        }
-        
-        .nav-arrow {
-            background: none;
-            border: none;
-            color: #cccccc;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 0 5px;
-        }
-        
-        .nav-arrow:hover {
-            color: #333333;
-        }
-        
-        .modal-body {
-            margin-bottom: 20px;
-        }
-        
-        .participant-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #333333;
-            font-size: 16px;
-        }
-        
-        .input-field {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #333333;
-        }
-        
-        .input-field:focus {
-            outline: none;
-            border-color: #007bff;
-        }
-        
-        .color-picker {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            height: 40px;
-            cursor: pointer;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .checkbox-group label {
-            font-weight: normal;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .button-group .btn {
-            flex: none;
-            width: 100%;
-        }
-        
-        /* Settings section */
-        .settings-section {
-            margin-top: 25px;
-            padding-top: 25px;
-            border-top: 1px solid #eee;
-        }
-        
-        .settings-section h3 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #333333;
-        }
-        
-        .radio-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .radio-option input[type="radio"] {
-            cursor: pointer;
-        }
-        
-        .radio-option label {
-            font-weight: normal;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-        
-        .btn-secondary {
-            background-color: #007bff;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #0056b3;
-        }
-        
-        /* Settings content - for participant and CPU views */
-        .settings-content {
-            display: none;
-        }
-        
-        .settings-content.active {
-            display: block;
-        }
-        
-        /* Customize section - hidden by default */
-        .customize-section {
-            display: none;
-            margin-top: 15px;
-        }
-        
-        /* ========== GAME VIEW (PHASER) ========== */
-        .game-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .game-info {
-            text-align: center;
-            color: #666;
-            font-size: 18px;
-        }
-        
-        #game-container {
-            width: 800px;
-            height: 600px;
-            background-color: #ffffff;
-            border: 2px solid #333;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f5f5f5; color: #333; min-height: 100vh; }
+        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: 30px; padding: 20px 0; border-bottom: 1px solid #ddd; text-align: center; }
+        .logo { width: 200px; height: 100px; }
+        .logo img { width: 100%; height: 100%; object-fit: contain; }
+        .header h1 { font-size: 48px; font-weight: bold; color: #333; margin: 0; }
+        .config-view { display: block; }
+        .game-view { display: none; }
+        .config-view.hide { display: none; }
+        .game-view.show { display: block; }
+        .main-content { display: flex; gap: 40px; }
+        .game-preview { flex: 1; display: flex; justify-content: center; }
+        #preview-container { width: 500px; height: 400px; background: #fff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+        .modal { width: 500px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 20px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .modal-header h2 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 24px; font-weight: bold; color: #333; }
+        .help-button { width: 28px; height: 28px; background: #007bff; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .help-button:hover { background: #0056b3; }
+        .nav-arrow { background: none; border: none; color: #ccc; font-size: 16px; cursor: pointer; padding: 0 5px; }
+        .nav-arrow:hover { color: #333; }
+        .modal-body { margin-bottom: 20px; }
+        .participant-form { display: flex; flex-direction: column; gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; font-size: 16px; }
+        .input-field { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; color: #333; }
+        .input-field:focus { outline: none; border-color: #007bff; }
+        .color-picker { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; height: 40px; cursor: pointer; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group label { font-weight: normal; cursor: pointer; font-size: 16px; }
+        .checkbox { width: 18px; height: 18px; cursor: pointer; }
+        .settings-section { margin-top: 25px; padding-top: 25px; border-top: 1px solid #eee; }
+        .settings-section h3 { font-size: 18px; margin-bottom: 15px; color: #333; }
+        .radio-group { display: flex; flex-direction: column; gap: 10px; }
+        .radio-option { display: flex; align-items: center; gap: 10px; }
+        .radio-option input[type="radio"] { cursor: pointer; }
+        .radio-option label { font-weight: normal; cursor: pointer; font-size: 16px; }
+        .modal-footer { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 12px 20px; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .settings-content { display: none; }
+        .settings-content.active { display: block; }
+        .customize-section { display: none; margin-top: 15px; }
+        .game-wrapper { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .game-info { text-align: center; color: #666; font-size: 18px; }
+        #game-container { width: 800px; height: 600px; background: #fff; border: 2px solid #333; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- HEADER -->
-        <header class="header">
-            <div class="logo">
-                <img src="assets/player.png" alt="CyberballOS Logo" />
-            </div>
-            <h1>CyberballOS Configuration Builder</h1>
-        </header>
-        
-        <!-- CONFIG VIEW (shown by default) -->
-        <div id="config-view" class="config-view">
-            <main class="main-content">
-                <!-- GAME PREVIEW (LEFT) -->
-                <div class="game-preview">
-                    <div id="preview-container"></div>
-                </div>
-                
-                <!-- MODAL (RIGHT) -->
-                <div class="modal">
-                    <div class="modal-header">
-                        <h2 id="modalTitle">Participant <span class="help-button" title="Help">?</span></h2>
-                        <button class="nav-arrow" id="navArrow">▶</button>
-                    </div>
-                    
-                    <!-- Participant Content (default) -->
-                    <div class="settings-content active" id="participantContent">
-                        <div class="modal-body">
-                            <form class="participant-form" onsubmit="return false;">
-                                <!-- Name -->
-                                <div class="form-group">
-                                    <label>Name</label>
-                                    <input type="text" id="participantName" class="input-field" value="Player 1" placeholder="Enter player name" />
-                                </div>
-                                
-                                <!-- Customize -->
-                                <div class="form-group checkbox-group">
-                                    <label>Customize</label>
-                                    <input type="checkbox" id="customizeCheckbox" class="checkbox" />
-                                </div>
-                                
-                                <!-- Customize section - shown when Customize is checked -->
-                                <div class="customize-section" id="customizeSection">
-                                    <!-- Color for player character -->
-                                    <div class="form-group">
-                                        <label>Color</label>
-                                        <input type="color" id="playerColor" class="color-picker" value="#FFFFFF" />
-                                    </div>
-                                </div>
-                                
-                                <!-- Leave Game Options - hidden as not implemented -->
-                                <div class="form-group checkbox-group" style="display: none;">
-                                    <label>Leave Game Options</label>
-                                    <input type="checkbox" id="leaveOptionsCheckbox" class="checkbox" disabled />
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <!-- CPU Settings Content (hidden by default) -->
-                    <div class="settings-content" id="cpuSettingsContent">
-                        <div class="modal-body">
-                            <form class="participant-form" onsubmit="return false;">
-                                <!-- CPU Settings -->
-                                <div class="settings-section">
-                                    <h3>CPU Players</h3>
-                                    <div class="radio-group">
-                                        <div class="radio-option">
-                                            <input type="radio" id="cpus2" name="cpus" value="2" checked />
-                                            <label for="cpus2">2 CPUs</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" id="cpus3" name="cpus" value="3" />
-                                            <label for="cpus3">3 CPUs</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <!-- Background Settings Content (hidden by default) -->
-                    <div class="settings-content" id="bgSettingsContent">
-                        <div class="modal-body">
-                            <form class="participant-form" onsubmit="return false;">
-                                <!-- Background Settings -->
-                                <div class="settings-section">
-                                    <h3>Background</h3>
-                                    <div class="radio-group">
-                                        <div class="radio-option">
-                                            <input type="radio" id="bgColorRadio" name="bgType" value="color" checked />
-                                            <label for="bgColorRadio">Color</label>
-                                        </div>
-                                        <div class="radio-option">
-                                            <input type="radio" id="bgImageRadio" name="bgType" value="image" />
-                                            <label for="bgImageRadio">Image URL</label>
-                                        </div>
-                                    </div>
-                                    <div id="bg-color-settings">
-                                        <div class="form-group">
-                                            <label for="bgColorValue">Background Color</label>
-                                            <input type="color" id="bgColorValue" class="color-picker" value="#f5f5f5" />
-                                        </div>
-                                    </div>
-                                    <div id="bg-image-settings" style="display: none;">
-                                        <div class="form-group">
-                                            <label for="bgImageUrl">Image URL</label>
-                                            <input type="url" id="bgImageUrl" class="input-field" placeholder="https://example.com/image.jpg" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" id="copyLinkBtn">Copy Link</button>
-                        <button type="button" class="btn btn-primary" id="previewBtn">Preview Game</button>
-                    </div>
-                </div>
-            </main>
+<div class="app-container">
+    <header class="header">
+        <div class="logo">
+            <img src="assets/player.png" alt="CyberballOS Logo" />
         </div>
-        
-        <!-- GAME VIEW (shown when ?cpus=N in URL) -->
-        <div id="game-view" class="game-view">
-            <div class="game-wrapper">
-                <div class="game-info">
-                    <p>Click on a player to throw the ball!</p>
-                </div>
-                <div id="game-container"></div>
+        <h1>CyberballOS Configuration Builder</h1>
+    </header>
+
+    <div id="config-view" class="config-view">
+        <main class="main-content">
+            <div class="game-preview">
+                <div id="preview-container"></div>
             </div>
+
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Participant <span class="help-button" title="Help">?</span></h2>
+                    <button class="nav-arrow" id="navArrow">▶</button>
+                </div>
+
+                <!-- Participant Content -->
+                <div class="settings-content active" id="participantContent">
+                    <div class="modal-body">
+                        <form class="participant-form" onsubmit="return false;">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input type="text" id="participantName" class="input-field" value="Player 1" placeholder="Enter player name" />
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <label>Customize</label>
+                                <input type="checkbox" id="customizeCheckbox" class="checkbox" />
+                            </div>
+                            <div class="customize-section" id="customizeSection">
+                                <div class="form-group">
+                                    <label>Color</label>
+                                    <input type="color" id="playerColor" class="color-picker" value="#FFFFFF" />
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="settings-content" id="settingsContent">
+                    <div class="modal-body">
+                        <form class="participant-form" onsubmit="return false;">
+                            <div class="settings-section">
+                                <h3>CPU Players</h3>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="cpus2" name="cpus" value="2" checked />
+                                        <label for="cpus2">2 CPUs</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="cpus3" name="cpus" value="3" />
+                                        <label for="cpus3">3 CPUs</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="settings-section">
+                                <h3>Background</h3>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="bgColorRadio" name="bgType" value="color" checked />
+                                        <label for="bgColorRadio">Color</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="bgImageRadio" name="bgType" value="image" />
+                                        <label for="bgImageRadio">Image URL</label>
+                                    </div>
+                                </div>
+                                <div id="bg-color-settings">
+                                    <div class="form-group">
+                                        <label for="bgColorValue">Background Color</label>
+                                        <input type="color" id="bgColorValue" class="color-picker" value="#f5f5f5" />
+                                    </div>
+                                </div>
+                                <div id="bg-image-settings" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="bgImageUrl">Image URL</label>
+                                        <input type="url" id="bgImageUrl" class="input-field" placeholder="https://example.com/image.jpg" />
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="copyLinkBtn">Copy Link</button>
+                    <button type="button" class="btn btn-primary" id="previewBtn">Preview Game</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="game-view" class="game-view">
+        <div class="game-wrapper">
+            <div class="game-info">
+                <p>Click on a player to throw the ball!</p>
+            </div>
+            <div id="game-container"></div>
         </div>
     </div>
-    
-    <script>
-        // Parse URL parameters
+</div>
+
+<!-- Haupt-Logic -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ========== INITIALISIERUNG ==========
+        // URL-Parameter beim Reload entfernen, um Default zu erzwingen
+        window.history.replaceState({}, '', window.location.pathname);
+
+        // Parse URL parameters (falls vorhanden) - ABER Image URL standardmäßig leer
         const urlParams = new URLSearchParams(window.location.search);
-        const hasCpusParam = urlParams.has('cpus');
-        let cpuCount = parseInt(urlParams.get('cpus')) || 2;
-        cpuCount = Math.min(Math.max(cpuCount, 2), 3);
-        
-        // ========== INITIALIZE VIEW ==========
-        const configView = document.getElementById('config-view');
-        const gameView = document.getElementById('game-view');
-        
-        // Always show config view on page load/refresh
-        // Game view is only shown when explicitly navigating via Preview Game button
-        configView.classList.remove('hide');
-        gameView.classList.remove('show');
-            
-            // ========== CONFIG VIEW LOGIC ==========
-            // Pre-fill form fields from URL parameters if present
-            if (hasCpusParam) {
-                const cpusParam = urlParams.get('cpus') || '2';
-                document.querySelector(`input[name="cpus"][value="${cpusParam}"]`).checked = true;
-                cpuCount = parseInt(cpusParam);
-                
-                // Pre-fill background settings
-                const bgTypeParam = urlParams.get('bgType') || 'color';
-                const bgParam = urlParams.get('bg') || '#f5f5f5';
-                if (bgTypeParam) {
-                    document.querySelector(`input[name="bgType"][value="${bgTypeParam}"]`).checked = true;
-                    if (bgTypeParam === 'color') {
-                        document.getElementById('bgColorValue').value = bgParam;
-                    } else {
-                        document.getElementById('bgImageUrl').value = decodeURIComponent(bgParam);
-                    }
-                }
-                
-                // Pre-fill player color and name
-                const playerColorParam = urlParams.get('playerColor');
-                if (playerColorParam) {
-                    document.getElementById('playerColor').value = playerColorParam;
-                    document.getElementById('customizeCheckbox').checked = true;
-                    document.getElementById('customizeSection').style.display = 'block';
-                }
-                
-                const playerNameParam = urlParams.get('pname');
-                if (playerNameParam) {
-                    document.getElementById('participantName').value = playerNameParam;
-                }
+        const cpuCount = Math.min(Math.max(parseInt(urlParams.get('cpus')) || 2, 2), 3);
+        const bgType = urlParams.get('bgType') || 'color';
+        const bgColor = urlParams.get('bg') || '#f5f5f5';
+        // 👈 FIX: bgImageUrl ist IMMER leer beim Laden der Seite
+        const bgImageUrl = '';
+        const playerColor = urlParams.get('playerColor') || '#FFFFFF';
+        const playerName = urlParams.get('pname') || 'Player 1';
+        const customizeEnabled = !!urlParams.get('playerColor');
+
+        // Formular mit Default-Werten füllen (Image URL ist leer)
+        document.querySelector(`input[name="cpus"][value="${cpuCount}"]`).checked = true;
+        document.querySelector(`input[name="bgType"][value="${bgType}"]`).checked = true;
+        document.getElementById('bgColorValue').value = bgType === 'color' ? bgColor : '#f5f5f5';
+        document.getElementById('bgImageUrl').value = ''; // 👈 IMMER leer
+        document.getElementById('bg-color-settings').style.display = bgType === 'color' ? 'block' : 'none';
+        document.getElementById('bg-image-settings').style.display = bgType === 'image' ? 'block' : 'none';
+        document.getElementById('participantName').value = playerName;
+        document.getElementById('customizeCheckbox').checked = customizeEnabled;
+        document.getElementById('playerColor').value = playerColor;
+        document.getElementById('customizeSection').style.display = customizeEnabled ? 'block' : 'none';
+
+        // ========== NAVIGATION ==========
+        const participantContent = document.getElementById('participantContent');
+        const settingsContent = document.getElementById('settingsContent');
+        const navArrow = document.getElementById('navArrow');
+        const modalTitle = document.getElementById('modalTitle');
+
+        navArrow.addEventListener('click', () => {
+            if (participantContent.classList.contains('active')) {
+                participantContent.classList.remove('active');
+                settingsContent.classList.add('active');
+                modalTitle.innerHTML = 'Settings <span class="help-button" title="Help">?</span>';
+                navArrow.textContent = '◀';
             } else {
-                document.querySelector(`input[name="cpus"][value="${cpuCount}"]`).checked = true;
+                settingsContent.classList.remove('active');
+                participantContent.classList.add('active');
+                modalTitle.innerHTML = 'Participant <span class="help-button" title="Help">?</span>';
+                navArrow.textContent = '▶';
             }
-            
-            // Initialize preview with current form values (including any pre-filled from URL)
-            setTimeout(() => {
-                previewConfig = getPreviewConfig();
-                if (window.previewGame) {
-                    window.previewGame.updateConfig(previewConfig);
+        });
+
+        // ========== EVENT LISTENERS ==========
+        document.getElementById('customizeCheckbox').addEventListener('change', () => {
+            const isChecked = document.getElementById('customizeCheckbox').checked;
+            document.getElementById('customizeSection').style.display = isChecked ? 'block' : 'none';
+            if (!isChecked) document.getElementById('playerColor').value = '#FFFFFF';
+            updatePreview();
+        });
+
+        document.querySelectorAll('input[name="bgType"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.getElementById('bg-color-settings').style.display = radio.value === 'color' ? 'block' : 'none';
+                document.getElementById('bg-image-settings').style.display = radio.value === 'image' ? 'block' : 'none';
+                // 👈 FIX: Image URL-Feld leeren, wenn auf Farbe gewechselt wird
+                if (radio.value === 'color') {
+                    document.getElementById('bgImageUrl').value = '';
                 }
-            }, 100);
-            
-            const participantContent = document.getElementById('participantContent');
-            const cpuSettingsContent = document.getElementById('cpuSettingsContent');
-            const navArrow = document.getElementById('navArrow');
-            const modalTitle = document.getElementById('modalTitle');
-            
-            // Navigation between Participant and CPU Settings
-            navArrow.addEventListener('click', () => {
-                if (participantContent.classList.contains('active')) {
-                    // Switch TO CPU Settings
-                    participantContent.classList.remove('active');
-                    cpuSettingsContent.classList.add('active');
-                    modalTitle.innerHTML = 'CPUs <span class="help-button" title="Help">?</span>';
-                    navArrow.textContent = '◀';
-                } else {
-                    // Switch TO Participant
-                    cpuSettingsContent.classList.remove('active');
-                    participantContent.classList.add('active');
-                    modalTitle.innerHTML = 'Participant <span class="help-button" title="Help">?</span>';
-                    navArrow.textContent = '▶';
-                }
+                updatePreview();
             });
-            
-            // Customize checkbox toggle
-            document.getElementById('customizeCheckbox').addEventListener('change', () => {
-                const isChecked = document.getElementById('customizeCheckbox').checked;
-                document.getElementById('customizeSection').style.display = 
-                    isChecked ? 'block' : 'none';
-                if (!isChecked) {
-                    // Reset color to default when customize is disabled
-                    document.getElementById('playerColor').value = '#FFFFFF';
-                }
-                updatePreviewConfig();
-            });
-            
-            // Background type toggle
-            document.querySelectorAll('input[name="bgType"]').forEach(radio => {
-                radio.addEventListener('change', () => {
-                    document.getElementById('bg-color-settings').style.display = 
-                        radio.value === 'color' ? 'block' : 'none';
-                    document.getElementById('bg-image-settings').style.display = 
-                        radio.value === 'image' ? 'block' : 'none';
-                    updatePreviewConfig();
-                });
-            });
-            
-            // Update preview when settings change
-            document.querySelectorAll('input[name="cpus"]').forEach(radio => {
-                radio.addEventListener('change', () => {
-                    cpuCount = parseInt(radio.value);
-                    updatePreviewConfig();
-                });
-            });
-            document.getElementById('bgColorValue')?.addEventListener('input', updatePreviewConfig);
-            document.getElementById('bgImageUrl')?.addEventListener('input', updatePreviewConfig);
-            document.getElementById('playerColor')?.addEventListener('input', updatePreviewConfig);
-            document.getElementById('playerColor')?.addEventListener('change', updatePreviewConfig);
-            document.getElementById('participantName')?.addEventListener('input', updatePreviewConfig);
-            document.getElementById('participantName')?.addEventListener('change', updatePreviewConfig);
-            
-            // Preview configuration object
-            let previewConfig = {
-                cpuCount: cpuCount,
-                bgType: 'color',
-                bgColor: '#f5f5f5',
-                bgImageUrl: '',
-                playerColor: '#FFFFFF',
-                customizeEnabled: false
+        });
+
+        document.querySelectorAll('input[name="cpus"]').forEach(radio => {
+            radio.addEventListener('change', updatePreview);
+        });
+        document.getElementById('bgColorValue').addEventListener('input', updatePreview);
+        document.getElementById('bgImageUrl').addEventListener('input', updatePreview);
+        document.getElementById('playerColor').addEventListener('input', updatePreview);
+        document.getElementById('participantName').addEventListener('input', updatePreview);
+
+        // ========== PREVIEW LOGIC ==========
+        function getConfig() {
+            return {
+                cpuCount: parseInt(document.querySelector('input[name="cpus"]:checked')?.value) || 2,
+                bgType: document.querySelector('input[name="bgType"]:checked')?.value || 'color',
+                bgColor: document.getElementById('bgColorValue')?.value || '#f5f5f5',
+                // 👈 FIX: bgImageUrl ist leer, wenn bgType 'color' ist
+                bgImageUrl: document.querySelector('input[name="bgType"]:checked')?.value === 'image' ?
+                    document.getElementById('bgImageUrl')?.value || '' : '',
+                playerColor: document.getElementById('customizeCheckbox').checked ?
+                    (document.getElementById('playerColor')?.value || '#FFFFFF') : '#FFFFFF',
+                playerName: document.getElementById('participantName')?.value || 'Player 1'
             };
-            
-            function getPreviewConfig() {
-                const customizeEnabled = document.getElementById('customizeCheckbox')?.checked || false;
-                return {
-                    cpuCount: parseInt(document.querySelector('input[name="cpus"]:checked')?.value) || cpuCount,
-                    bgType: document.querySelector('input[name="bgType"]:checked')?.value || 'color',
-                    bgColor: document.getElementById('bgColorValue')?.value || '#f5f5f5',
-                    bgImageUrl: document.getElementById('bgImageUrl')?.value || '',
-                    playerColor: customizeEnabled ? (document.getElementById('playerColor')?.value || '#FFFFFF') : '#FFFFFF',
-                    playerName: document.getElementById('participantName')?.value || 'Player 1'
-                };
+        }
+
+        function updatePreview() {
+            const config = getConfig();
+            window.previewConfig = config;
+            if (window.PhaserPreviewGame && window.previewGame) {
+                window.previewGame.updateConfig(config);
             }
-            
-            function updatePreviewConfig() {
-                previewConfig = getPreviewConfig();
-                window.previewConfig = previewConfig; // Debug
-                if (window.previewGame) {
-                    window.previewGame.updateConfig(previewConfig);
-                }
+        }
+
+        // Initialize Preview Game
+        const previewContainer = document.getElementById('preview-container');
+        if (previewContainer) {
+            window.previewGame = new window.PhaserPreviewGame(previewContainer);
+            updatePreview();
+        }
+
+        // ========== BUTTONS ==========
+        document.getElementById('copyLinkBtn').addEventListener('click', () => {
+            const config = getConfig();
+            const params = new URLSearchParams({ cpus: config.cpuCount, bgType: config.bgType });
+
+            if (config.bgType === 'color') {
+                params.set('bg', config.bgColor);
+            } else if (config.bgImageUrl) {
+                params.set('bg', encodeURIComponent(config.bgImageUrl));
             }
-            
-            // Phaser Preview Scene Class - must be global for Phaser
-            window.PhaserPreviewScene = class PhaserPreviewScene extends Phaser.Scene {
-                preload() {
-                    this.load.setBaseURL('assets/');
-                    this.load.image('ball', 'ball.png');
-                    this.load.multiatlas('player', 'player.json');
-                }
-                
-                create() {
-                    this.players = [];
-                    this.ball = null;
-                    this.texts = [];
-                    this.config = {
-                        cpuCount: 2,
-                        bgType: 'color',
-                        bgColor: '#f5f5f5',
-                        bgImageUrl: '',
-                        playerColor: '#FFFFFF',
-                        playerName: 'Player 1'
-                    };
-                    
-                    // Set background
-                    if (this.config.bgType === 'color') {
-                        this.cameras.main.setBackgroundColor(this.config.bgColor);
-                    } else {
-                        this.cameras.main.setBackgroundColor('#f5f5f5');
-                    }
-                    
-                    // Create animations
-                    this.anims.create({
-                        key: 'idle',
-                        frames: this.anims.generateFrameNames('player', { start: 1, end: 1, prefix: 'idle/', suffix: '.png' })
-                    });
-                    this.anims.create({
-                        key: 'active',
-                        frames: this.anims.generateFrameNames('player', { start: 1, end: 1, prefix: 'active/', suffix: '.png' })
-                    });
-                    
-                    this.updateScene();
-                }
-                
-                updateScene() {
-                    this.players.forEach(p => p.destroy());
-                    this.texts.forEach(t => t.destroy());
-                    this.texts = [];
-                    if (this.ball) { this.ball.destroy(); this.ball = null; }
-                    this.players = [];
-                    
-                    // Set background
-                    if (this.config.bgType === 'color') {
-                        this.cameras.main.setBackgroundColor(this.config.bgColor);
-                    } else {
-                        this.cameras.main.setBackgroundColor('#f5f5f5');
-                    }
-                    
-                    // Scale factors from game (800x600) to preview (500x400)
-                    const scaleX = 500 / 800;
-                    const scaleY = 400 / 600;
-                    const scale = Math.min(scaleX, scaleY);
-                    
-                    // Game positions scaled to preview
-                    const player0X = 400 * scaleX;  // 400 * 0.625 = 250
-                    const player0Y = 500 * scaleY;  // 500 * 0.666 = 333.33
-                    
-                    // Player 0 (user) - bottom center with ACTIVE animation
-                    const player0 = this.add.sprite(player0X, player0Y, 'player', 'active/1.png');
-                    player0.setScale(scale);
-                    player0.play('active');
-                    
-                    // Always apply player color - check window.previewConfig first
-                    const actualColor = (window.previewConfig?.playerColor || this.config.playerColor || '#FFFFFF');
-                    const colorHex = actualColor.startsWith('#') ? actualColor.slice(1) : actualColor;
-                    const tint = parseInt(colorHex, 16);
-                    player0.setTint(tint);
-                    this.players.push(player0);
-                    const playerName = this.config.playerName || 'Player 1';
-                    const player1Text = this.add.text(player0X, player0Y + 50 * scaleY, playerName, { fontFamily: 'Arial', fontSize: '12px', color: '#000000' }).setOrigin(0.5);
-                    this.texts.push(player1Text);
-                    
-                    // Ball at hand position - using game's getHandPosition logic
-                    // In game: handOffsetX = -40, handOffsetY = -25 (player0.flipX = false)
-                    const handOffsetX = -40 * scaleX;  // -25
-                    const handOffsetY = -25 * scaleY;  // -16.67
-                    this.ball = this.add.sprite(
-                        player0X + handOffsetX,
-                        player0Y + handOffsetY,
-                        'ball'
-                    );
-                    this.ball.setScale(scale);
-                    
-                    // CPU positions from game scaled to preview
-                    let cpuPositions;
-                    if (this.config.cpuCount === 2) {
-                        cpuPositions = [
-                            { x: 200 * scaleX, y: 300 * scaleY },  // 125, 200
-                            { x: 600 * scaleX, y: 300 * scaleY }   // 375, 200
-                        ];
-                    } else if (this.config.cpuCount === 3) {
-                        cpuPositions = [
-                            { x: 200 * scaleX, y: 300 * scaleY },  // 125, 200
-                            { x: 400 * scaleX, y: 100 * scaleY },  // 250, 66.67
-                            { x: 600 * scaleX, y: 300 * scaleY }   // 375, 200
-                        ];
-                    }
-                    
-                    if (cpuPositions) {
-                        for (let i = 0; i < this.config.cpuCount; i++) {
-                            const cpu = this.add.sprite(cpuPositions[i].x, cpuPositions[i].y, 'player', 'idle/1.png');
-                            cpu.setScale(scale);
-                            cpu.play('idle');
-                            this.players.push(cpu);
-                            const cpuText = this.add.text(cpuPositions[i].x, cpuPositions[i].y + 50 * scaleY, `CPU ${i + 1}`, { fontFamily: 'Arial', fontSize: '12px', color: '#000000' }).setOrigin(0.5);
-                            this.texts.push(cpuText);
-                        }
-                    }
-                }
-                
-                updateConfig(config) {
-                    this.config = config;
-                    this.updateScene();
-                }
+
+            if (document.getElementById('customizeCheckbox').checked) {
+                params.set('playerColor', config.playerColor);
             }
-            
-            window.PhaserPreviewGame = class PhaserPreviewGame {
-                constructor(container, cpuCount) {
-                    this.container = container;
-                    this.cpuCount = cpuCount;
-                    this.game = null;
-                    this.scene = null;
-                    this.pendingConfig = null;
-                    this.init();
-                }
-                
-                init() {
-                    const config = {
-                        type: Phaser.AUTO,
-                        width: 500,
-                        height: 400,
-                        backgroundColor: '#ffffff',
-                        physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
-                        parent: this.container,
-                        scene: [PhaserPreviewScene]
-                    };
-                    this.game = new Phaser.Game(config);
-                    this.game.scene.start('default');
-                    
-                    // Scene is ready - store reference and apply pending config
-                    this.game.events.once('ready', () => {
-                        this.scene = this.game.scene.getScene('default');
-                        if (this.pendingConfig) {
-                            this.scene.updateConfig(this.pendingConfig);
-                            this.pendingConfig = null;
-                        }
-                    });
-                }
-                
-                updateConfig(config) {
-                    if (this.scene) {
-                        this.scene.updateConfig(config);
-                    } else {
-                        // Scene not ready yet, store config for when ready event fires
-                        this.pendingConfig = config;
-                    }
-                }
-                
-                destroy() {
-                    if (this.game) {
-                        this.game.destroy(true);
-                    }
-                }
+            if (config.playerName !== 'Player 1') {
+                params.set('pname', config.playerName);
             }
-            
-            // Initialize Phaser Preview
-            let previewGame = null;
-            const previewContainer = document.getElementById('preview-container');
-            if (previewContainer) {
-                previewGame = new PhaserPreviewGame(previewContainer, cpuCount);
-                window.previewGame = previewGame;
-                // Wait for Phaser to initialize before sending config
-                setTimeout(() => {
-                    previewConfig = getPreviewConfig();
-                    previewGame.updateConfig(previewConfig);
-                }, 500);
+
+            const url = `${window.location.href.split('?')[0]}?${params.toString()}`;
+            navigator.clipboard.writeText(url).then(() => alert(`Link kopiert!\n${url}`))
+                .catch(() => prompt('Kopiere diesen Link:', url));
+        });
+
+        document.getElementById('previewBtn').addEventListener('click', () => {
+            const config = getConfig();
+            const params = new URLSearchParams({ cpus: config.cpuCount, bgType: config.bgType });
+
+            if (config.bgType === 'color') {
+                params.set('bg', config.bgColor);
+            } else if (config.bgImageUrl) {
+                params.set('bg', encodeURIComponent(config.bgImageUrl));
             }
-            
-            // Copy Link button
-            document.getElementById('copyLinkBtn').addEventListener('click', () => {
-                const selectedCpus = document.querySelector('input[name="cpus"]:checked')?.value || '2';
-                const bgType = document.querySelector('input[name="bgType"]:checked')?.value || 'color';
-                const bgColor = document.getElementById('bgColorValue')?.value || '#f5f5f5';
-                const bgImageUrl = document.getElementById('bgImageUrl')?.value;
-                const playerColor = document.getElementById('playerColor')?.value || '#FFFFFF';
-                const playerName = document.getElementById('participantName')?.value || 'Player 1';
-                
-                const params = new URLSearchParams({
-                    cpus: selectedCpus
-                });
-                
-                if (bgType === 'color' && bgColor) {
-                    params.set('bg', bgColor);
-                    params.set('bgType', 'color');
-                } else if (bgType === 'image' && bgImageUrl) {
-                    params.set('bg', encodeURIComponent(bgImageUrl));
-                    params.set('bgType', 'image');
-                }
-                
-                if (document.getElementById('customizeCheckbox')?.checked) {
-                    params.set('playerColor', playerColor);
-                }
-                
-                if (playerName && playerName !== 'Player 1') {
-                    params.set('pname', playerName);
-                }
-                
-                const baseUrl = window.location.href.split('?')[0];
-                const configUrl = `${baseUrl}?${params.toString()}`;
-                
-                navigator.clipboard.writeText(configUrl).then(() => {
-                    alert(`Configuration link copied!\n\nCopied link:\n${configUrl}`);
-                }).catch(err => {
-                    const tempInput = document.createElement('input');
-                    tempInput.value = configUrl;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-                    alert(`Configuration link copied!\n\nCopied link:\n${configUrl}`);
-                });
-            });
-            
-            // Preview Game button - show game view without reloading
-            document.getElementById('previewBtn').addEventListener('click', () => {
-                const selectedCpus = document.querySelector('input[name="cpus"]:checked')?.value || '2';
-                const bgType = document.querySelector('input[name="bgType"]:checked')?.value || 'color';
-                const bgColor = document.getElementById('bgColorValue')?.value || '#f5f5f5';
-                const bgImageUrl = document.getElementById('bgImageUrl')?.value;
-                const playerColor = document.getElementById('playerColor')?.value || '#FFFFFF';
-                const playerName = document.getElementById('participantName')?.value || 'Player 1';
-                
-                // Update URL with parameters for Copy Link functionality
-                const params = new URLSearchParams({
-                    cpus: selectedCpus
-                });
-                
-                if (bgType === 'color' && bgColor) {
-                    params.set('bg', bgColor);
-                    params.set('bgType', 'color');
-                } else if (bgType === 'image' && bgImageUrl) {
-                    params.set('bg', encodeURIComponent(bgImageUrl));
-                    params.set('bgType', 'image');
-                }
-                
-                if (document.getElementById('customizeCheckbox')?.checked) {
-                    params.set('playerColor', playerColor);
-                }
-                
-                if (playerName && playerName !== 'Player 1') {
-                    params.set('pname', playerName);
-                }
-                
-                window.history.pushState({}, '', `?${params.toString()}`);
-                
-                // Show game view
-                configView.classList.add('hide');
-                gameView.classList.add('show');
-                
-                // Set config for game.js
-                window.cyberballConfig = {
-                    cpuCount: parseInt(selectedCpus),
-                    bgType: bgType,
-                    bg: bgType === 'color' ? bgColor : bgImageUrl,
-                    playerColor: document.getElementById('customizeCheckbox')?.checked ? playerColor : '#FFFFFF',
-                    playerName: playerName
-                };
-                
-                // Set trigger and start game
-                window.cyberballGameTrigger = true;
-                
-                // Start the game
-                const gameContainer = document.getElementById('game-container');
-                if (gameContainer) {
-                    // Destroy existing game instance if any
-                    if (window.cyberballGameInstance) {
-                        window.cyberballGameInstance.destroy(true);
-                        window.cyberballGameInstance = null;
-                    }
-                    
-                    // Ensure game.js is loaded
-                    if (window.GameScene && window.getGameConfig) {
-                        window.cyberballGameInstance = new Phaser.Game(window.getGameConfig());
-                        window.cyberballGameInstance.scene.add('default', window.GameScene);
-                        window.cyberballGameInstance.scene.start('default');
-                    }
-                }
-            });
-            
-            
-            // Initialize preview config
-            window.cyberballConfig = { cpuCount: cpuCount };
-    </script>
+
+            if (document.getElementById('customizeCheckbox').checked) {
+                params.set('playerColor', config.playerColor);
+            }
+            if (config.playerName !== 'Player 1') {
+                params.set('pname', config.playerName);
+            }
+
+            window.history.pushState({}, '', `?${params.toString()}`);
+            document.getElementById('config-view').classList.add('hide');
+            document.getElementById('game-view').classList.add('show');
+
+            window.cyberballConfig = {
+                cpuCount: config.cpuCount,
+                bgType: config.bgType,
+                bg: config.bgType === 'color' ? config.bgColor : config.bgImageUrl,
+                playerColor: document.getElementById('customizeCheckbox').checked ? config.playerColor : '#FFFFFF',
+                playerName: config.playerName
+            };
+            window.cyberballGameTrigger = true;
+
+            if (window.cyberballGameInstance) {
+                window.cyberballGameInstance.destroy(true);
+            }
+            if (window.GameScene && window.getGameConfig) {
+                window.cyberballGameInstance = new Phaser.Game(window.getGameConfig());
+                window.cyberballGameInstance.scene.add('default', window.GameScene);
+                window.cyberballGameInstance.scene.start('default');
+            }
+        });
+
+        window.cyberballConfig = { cpuCount: cpuCount };
+    });
+</script>
 </body>
 </html>

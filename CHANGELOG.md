@@ -4,6 +4,28 @@ All notable changes to the Cyberball game.
 
 ---
 
+## [0.6.2] – 2026-09-01
+
+### Added
+
+- **Image URL converter for various image hosts** – Support for PostImage.cc, Pexels, and Imgur with automatic conversion to direct image URLs
+
+### Fixed
+
+- **404 errors for PostImage.cc URLs** – Fixed by converting to direct links via CORS proxy
+- **Background image loading for various image hosting services** – Properly handles PostImage.cc, Pexels, and Imgur URLs
+- **Copy Link now generates working URLs** – Correctly formats image paths and removes trailing slashes/Live Server parameters
+- **Direct game start from URL parameters** – Automatically launches the game when parameters (e.g., `?cpus=2&bgType=color`) are present
+- **Asset loading paths for subdirectories** – Fixed base path resolution for `/cyberball/` subfolder
+- **Consistent URL handling** – Unified URL generation logic between "Copy Link" and "Preview Game" buttons
+
+### Optimized
+
+- **Modular helper functions** – Extracted reusable logic (e.g., `buildGameUrl()`, `getConfig()`)
+- **Centralized DOM access** – Cached all DOM elements to minimize repeated lookups
+
+---
+
 ## [0.6.1] – 2026-09-01
 
 ### Fixed

@@ -15,29 +15,29 @@ window.getGameConfig = function getGameConfig() {
         },
         parent: 'game-container'
     };
-}
+};
 
 // ========== GAME SCENE CLASS ==========
 window.GameScene = class GameScene extends Phaser.Scene {
     preload() {
-        // 1. Lokale Assets laden (ball, player)
-        this.load.setBaseURL('assets/');
+        // Construct correct base path for assets
+        const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        this.load.setBaseURL(basePath + 'assets/');
         this.load.image('ball', 'ball.png');
         this.load.multiatlas('player', 'player.json');
 
-        // 2. Hintergrundbild laden (absolute URL?)
+        // Load background image if specified in URL
         const bgUrlParams = new URLSearchParams(window.location.search);
         const bgType = bgUrlParams.get('bgType');
         const bgValue = bgUrlParams.get('bg');
 
         if (bgType === 'image' && bgValue) {
             const imageUrl = decodeURIComponent(bgValue);
-
-            // ✅ BaseURL kurz zurücksetzen für absolute URLs
+            // Temporarily reset base URL for absolute URLs
             const oldBaseURL = this.load.baseURL;
-            this.load.setBaseURL('');  // Leer = absolute URLs erlaubt
+            this.load.setBaseURL('');
             this.load.image('background', imageUrl);
-            this.load.setBaseURL(oldBaseURL);  // Zurücksetzen für andere Assets
+            this.load.setBaseURL(oldBaseURL);
         }
     }
 
@@ -51,7 +51,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
 
         if (bgType === 'color') {
             this.cameras.main.setBackgroundColor(bgValue);
-        } else if (bgType === 'image' && bgValue) {
+        } else if (bgType === 'image' && bgValue && this.textures.exists('background')) {
             const bg = this.add.image(400, 300, 'background');
             bg.setDisplaySize(800, 600);
             bg.setDepth(-100);

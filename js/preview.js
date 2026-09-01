@@ -17,16 +17,21 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
     }
 
     preload() {
-        this.load.setBaseURL('assets/');
+        // Construct correct base path for assets
+        const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        this.load.setBaseURL(basePath + 'assets/');
         this.load.image('ball', 'ball.png');
         this.load.multiatlas('player', 'player.json');
 
-        // Bild in preload laden, falls vorhanden
+        // Load background image if URL is provided
         if (this.config.bgType === 'image' && this.config.bgImageUrl && this.config.bgImageUrl.trim() !== '') {
             try {
+                const oldBaseURL = this.load.baseURL;
+                this.load.setBaseURL('');
                 this.load.image('previewBg', this.config.bgImageUrl);
+                this.load.setBaseURL(oldBaseURL);
             } catch (e) {
-                console.error("Fehler beim Laden des Hintergrundbilds:", e);
+                console.error("Error loading background image:", e);
             }
         }
     }
@@ -94,8 +99,11 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
 
         const player0 = this.add.sprite(player0X, player0Y, 'player', 'active/1.png');
         player0.setScale(scaleX);
-        player0.play('active');
+        if (this.anims.exists('active')) {
+            player0.play('active');
+        }
 
+        // Apply player color tint
         const actualColor = this.config.playerColor || '#FFFFFF';
         const colorHex = actualColor.startsWith('#') ? actualColor.slice(1) : actualColor;
         const tint = parseInt(colorHex, 16);
@@ -113,21 +121,20 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
         this.ball = this.add.sprite(player0X - 25, player0Y - 16.67, 'ball');
         this.ball.setScale(scaleX);
 
-        // 👈 FIX: Dynamische CPU-Positionen basierend auf cpuCount
+        // Dynamic CPU positions based on cpuCount
         let cpuPositions;
         if (this.config.cpuCount === 2) {
             cpuPositions = [
-                { x: 200 * scaleX, y: 300 * scaleY },  // CPU 1 - links
-                { x: 600 * scaleX, y: 300 * scaleY }   // CPU 2 - rechts
+                { x: 200 * scaleX, y: 300 * scaleY },
+                { x: 600 * scaleX, y: 300 * scaleY }
             ];
         } else if (this.config.cpuCount === 3) {
             cpuPositions = [
-                { x: 200 * scaleX, y: 300 * scaleY },  // CPU 1 - links
-                { x: 400 * scaleX, y: 100 * scaleY },  // CPU 2 - oben (gegenüber P1)
-                { x: 600 * scaleX, y: 300 * scaleY }   // CPU 3 - rechts (gegenüber CPU 1)
+                { x: 200 * scaleX, y: 300 * scaleY },
+                { x: 400 * scaleX, y: 100 * scaleY },
+                { x: 600 * scaleX, y: 300 * scaleY }
             ];
         } else {
-            // Fallback: 2 CPUs
             cpuPositions = [
                 { x: 200 * scaleX, y: 300 * scaleY },
                 { x: 600 * scaleX, y: 300 * scaleY }
@@ -137,7 +144,9 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
         cpuPositions.forEach((pos, i) => {
             const cpu = this.add.sprite(pos.x, pos.y, 'player', 'idle/1.png');
             cpu.setScale(scaleX);
-            cpu.play('idle');
+            if (this.anims.exists('idle')) {
+                cpu.play('idle');
+            }
             this.players.push(cpu);
             const cpuText = this.add.text(pos.x, pos.y + 50 * scaleY, `CPU ${i + 1}`, {
                 fontFamily: 'Arial',
@@ -166,8 +175,10 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
 };
 
 // ========== PHASER PREVIEW GAME ==========
+// Manages the Phaser game instance for the preview
 window.PhaserPreviewGame = class {
     constructor(container) {
+        // Default configuration
         const defaultConfig = {
             cpuCount: 2,
             bgType: 'color',
@@ -180,6 +191,7 @@ window.PhaserPreviewGame = class {
         this.pendingConfig = null;
         this.isReady = false;
 
+        // Create Phaser game instance
         this.game = new Phaser.Game({
             type: Phaser.WEBGL,
             width: 500,
@@ -194,11 +206,13 @@ window.PhaserPreviewGame = class {
             audio: { noAudio: true }
         });
 
+        // Wait for game to be ready before using the scene
         this.game.events.once('ready', () => {
             this.scene = this.game.scene.getScene('default');
             this.scene.init({ config: defaultConfig });
             this.isReady = true;
 
+            // Apply any pending configuration
             if (this.pendingConfig) {
                 this.scene.updateConfig(this.pendingConfig);
                 this.pendingConfig = null;
@@ -206,15 +220,43 @@ window.PhaserPreviewGame = class {
         });
     }
 
+    // Update configuration
     updateConfig(config) {
         if (this.isReady && this.scene) {
             this.scene.updateConfig(config);
         } else {
+            // Store config until scene is ready
             this.pendingConfig = config;
         }
     }
 
+    // Clean up game instance
     destroy() {
         if (this.game) this.game.destroy(true);
     }
 };
+
+// Helper function to convert various image host URLs to direct image URLs
+function convertToDirectImageUrl(url) {
+    if (!url) return '';
+
+    // Imgur - already direct
+    if (url.includes('imgur.com')) {
+        return url;
+    }
+    // PostImage.cc - add CORS proxy for external images
+    else if (url.includes('postimg.cc')) {
+        // Use a CORS proxy for PostImage.cc
+        return `https://cors-anywhere.herokuapp.com/${url.replace('/B6c6', '/direct').replace('/b6c6', '/direct')}`;
+    }
+    // Pexels
+    else if (url.includes('pexels.com')) {
+        const match = url.match(/photos\/(\d+)\//);
+        if (match) {
+            const photoId = match[1];
+            return `https://cors-anywhere.herokuapp.com/https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1`;
+        }
+    }
+    // Default - return as is
+    return url;
+}

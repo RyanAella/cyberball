@@ -21,14 +21,10 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
         this.load.image('ball', 'ball.png');
         this.load.multiatlas('player', 'player.json');
 
-        // 🔥 Bild in preload laden, falls vorhanden
+        // Bild in preload laden, falls vorhanden
         if (this.config.bgType === 'image' && this.config.bgImageUrl && this.config.bgImageUrl.trim() !== '') {
             try {
-                // Einzigartiger Key, um Caching zu vermeiden
-                const textureKey = 'previewBg_' + Date.now();
-                this.load.image(textureKey, this.config.bgImageUrl);
-                // Speichere den Key für später
-                this.currentTextureKey = textureKey;
+                this.load.image('previewBg', this.config.bgImageUrl);
             } catch (e) {
                 console.error("Fehler beim Laden des Hintergrundbilds:", e);
             }
@@ -69,12 +65,12 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
             }
         } else if (this.config.bgType === 'image' && this.config.bgImageUrl.trim() !== '') {
             // Bild anzeigen, falls in preload geladen
-            if (this.currentTextureKey && this.textures.exists(this.currentTextureKey)) {
+            if (this.textures.exists('previewBg')) {
                 this.cameras.main.setBackgroundColor('#f5f5f5');
                 if (this.backgroundImage) {
                     this.backgroundImage.destroy();
                 }
-                this.backgroundImage = this.add.image(250, 200, this.currentTextureKey);
+                this.backgroundImage = this.add.image(250, 200, 'previewBg');
                 this.backgroundImage.setDisplaySize(500, 400);
                 this.backgroundImage.setDepth(-100);
                 this.backgroundImage.setOrigin(0.5, 0.5);
@@ -117,11 +113,26 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
         this.ball = this.add.sprite(player0X - 25, player0Y - 16.67, 'ball');
         this.ball.setScale(scaleX);
 
-        // CPU Positionen (2 CPUs)
-        const cpuPositions = [
-            { x: 200 * scaleX, y: 300 * scaleY },
-            { x: 600 * scaleX, y: 300 * scaleY }
-        ];
+        // 👈 FIX: Dynamische CPU-Positionen basierend auf cpuCount
+        let cpuPositions;
+        if (this.config.cpuCount === 2) {
+            cpuPositions = [
+                { x: 200 * scaleX, y: 300 * scaleY },  // CPU 1 - links
+                { x: 600 * scaleX, y: 300 * scaleY }   // CPU 2 - rechts
+            ];
+        } else if (this.config.cpuCount === 3) {
+            cpuPositions = [
+                { x: 200 * scaleX, y: 300 * scaleY },  // CPU 1 - links
+                { x: 400 * scaleX, y: 100 * scaleY },  // CPU 2 - oben (gegenüber P1)
+                { x: 600 * scaleX, y: 300 * scaleY }   // CPU 3 - rechts (gegenüber CPU 1)
+            ];
+        } else {
+            // Fallback: 2 CPUs
+            cpuPositions = [
+                { x: 200 * scaleX, y: 300 * scaleY },
+                { x: 600 * scaleX, y: 300 * scaleY }
+            ];
+        }
 
         cpuPositions.forEach((pos, i) => {
             const cpu = this.add.sprite(pos.x, pos.y, 'player', 'idle/1.png');
@@ -140,11 +151,12 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
     updateConfig(config) {
         // Prüfe, ob sich die Bild-URL oder der Typ geändert hat
         const bgChanged = config.bgImageUrl !== this.config.bgImageUrl || config.bgType !== this.config.bgType;
+        const cpuChanged = config.cpuCount !== this.config.cpuCount;
 
         this.config = { ...this.config, ...config };
 
-        if (bgChanged) {
-            // Szene neu starten, um das neue Bild zu laden
+        // Szene neu starten, wenn sich Hintergrund oder CPU-Anzahl geändert hat
+        if (bgChanged || cpuChanged) {
             this.scene.restart({ config: this.config });
         } else {
             // Nur die Szene aktualisieren, wenn sich andere Dinge geändert haben

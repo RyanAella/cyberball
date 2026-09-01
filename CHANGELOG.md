@@ -4,6 +4,17 @@ All notable changes to the Cyberball game.
 
 ---
 
+## [0.6.1] – 2026-09-01
+
+### Fixed
+- **CPU settings now properly update preview and game** – Dynamically positions 2 or 3 CPU players based on selection
+- **Background images display correctly in preview** – Fixed black background with green border issue
+- **Old background images no longer persist** when switching to new URLs or colors
+- **Preview updates immediately** when changing CPU count or background settings
+- **Scene restart logic** – Properly reloads textures when background image URL changes
+
+---
+
 ## [0.6.0] – 2026-08-31
 
 ### Added

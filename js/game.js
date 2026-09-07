@@ -21,8 +21,7 @@ window.getGameConfig = function getGameConfig() {
 window.GameScene = class GameScene extends Phaser.Scene {
     preload() {
         // Construct correct base path for assets
-        const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-        this.load.setBaseURL(basePath + 'assets/');
+        this.load.setBaseURL(window.location.pathname + '/assets/');
         this.load.image('ball', 'ball.png');
         this.load.multiatlas('player', 'player.json');
 

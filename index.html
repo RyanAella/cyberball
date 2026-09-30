@@ -399,8 +399,10 @@
                 </div>
                 <div id="bg-image-settings" style="display: none;">
                   <div class="form-group">
-                    <label for="bgImageUrl">Image URL</label>
-                    <input type="url" id="bgImageUrl" class="input-field" placeholder="https://example.com/image.jpg" />
+                    <label for="bgImageFile">Hintergrundbild</label>
+                    <input type="file" id="bgImageFile" class="input-field" accept="image/*" />
+                    <input type="hidden" id="bgImageData" />
+                    <div class="avatar-hint">JPEG/PNG, wird automatisch verkleinert. Kein Server-Speicher: das Bild wird im Spiel-Link eingebettet.</div>
                   </div>
                 </div>
               </div>
@@ -492,7 +494,7 @@
       document.querySelector(`input[name="cpus"][value="${cpuCount}"]`).checked = true;
       document.querySelector(`input[name="bgType"][value="${bgType}"]`).checked = true;
       document.getElementById("bgColorValue").value = bgType === "color" ? bgColor : "#f5f5f5";
-      document.getElementById("bgImageUrl").value = bgImageUrl;
+      document.getElementById("bgImageData").value = bgImageUrl;
       document.getElementById("bg-color-settings").style.display = bgType === "color" ? "block" : "none";
       document.getElementById("bg-image-settings").style.display = bgType === "image" ? "block" : "none";
       document.getElementById("participantName").value = playerName;
@@ -604,23 +606,6 @@
         });
     }
 
-    // Helper function
-    function convertToDirectImageUrl(url) {
-      if (!url) return "";
-      if (url.includes("imgur.com")) return url;
-      if (url.includes("postimg.cc")) {
-        return `https://cors-anywhere.herokuapp.com/${url.replace("/B6c6", "/direct").replace("/b6c6", "/direct")}`;
-      }
-      if (url.includes("pexels.com")) {
-        const match = url.match(/photos\/(\d+)\//);
-        if (match) {
-          const photoId = match[1];
-          return `https://cors-anywhere.herokuapp.com/https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1`;
-        }
-      }
-      return url;
-    }
-
     // ========== PREVIEW LOGIC ==========
     function getConfig() {
       return {
@@ -628,7 +613,7 @@
         bgType: document.querySelector('input[name="bgType"]:checked')?.value || "color",
         bgColor: document.getElementById("bgColorValue")?.value || "#f5f5f5",
         bgImageUrl: document.querySelector('input[name="bgType"]:checked')?.value === "image"
-                ? document.getElementById("bgImageUrl")?.value || ""
+                ? document.getElementById("bgImageData")?.value || ""
                 : "",
         playerColor: document.getElementById("customizeCheckbox").checked
                 ? document.getElementById("playerColor")?.value || "#FFFFFF"
@@ -736,7 +721,7 @@
         document.getElementById("bg-color-settings").style.display = radio.value === "color" ? "block" : "none";
         document.getElementById("bg-image-settings").style.display = radio.value === "image" ? "block" : "none";
         if (radio.value === "color") {
-          document.getElementById("bgImageUrl").value = "";
+          document.getElementById("bgImageData").value = "";
         }
         updatePreview();
       });
@@ -745,7 +730,33 @@
     document.querySelectorAll('input[name="cpus"]').forEach((radio) => {
       radio.addEventListener("change", updatePreview);
     });
-    document.getElementById("bgImageUrl").addEventListener("input", updatePreview);
+    const bgImageFile = document.getElementById("bgImageFile");
+    if (bgImageFile) {
+      bgImageFile.addEventListener("change", (e) => {
+        const wrapper = e.target.closest(".form-group");
+        const input = e.target;
+        const file = input.files && input.files[0];
+        if (!file) return;
+        input.disabled = true;
+        compressImageToDataUrl(file, 800, 0.7)
+          .then(dataUrl => {
+            document.getElementById("bgImageData").value = dataUrl;
+            input.disabled = false;
+            let badge = wrapper.querySelector(".avatar-badge");
+            if (!badge) {
+              badge = document.createElement("div");
+              badge.className = "avatar-badge";
+              wrapper.appendChild(badge);
+            }
+            badge.textContent = "✓ Bild übernommen";
+            updatePreview();
+          })
+          .catch(err => {
+            input.disabled = false;
+            alert("Fehler beim Verarbeiten des Bildes: " + err.message);
+          });
+      });
+    }
     document.getElementById("playerColor").addEventListener("input", updatePreview);
     document.getElementById("participantName").addEventListener("input", updatePreview);
     const avatarFile0 = document.getElementById("avatarFile0");

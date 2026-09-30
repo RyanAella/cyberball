@@ -15,6 +15,7 @@ All notable changes to the Cyberball game.
 
 ### Fixed
 - **Asset base path with `index.html` in URL** – Base URL no longer appends `/assets/` to `/index.html`, fixing 404s when opening the game via `index.html?...`
+- **Background image now also via file upload** – Same Base64-in-link solution as avatars: client-side compression to max 800×600 px, no external image hosts, no CORS proxy; removed obsolete `convertToDirectImageUrl` helper (cors-anywhere dependency)
 
 ## [0.6.2] – 2026-09-01
 

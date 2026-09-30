@@ -15,7 +15,7 @@ Features a configuration builder, live preview, and playable game mode.
 - **Configuration Builder**: Set number of CPU players (2 or 3) before starting the game
 - **Background Customization**:
     - Choose between **color** or **image** background
-    - Direct image URL input (supports external hosts like Imgur, Pexels)
+    - Background image is uploaded directly in the builder (file upload) and embedded in the game link \u2013 no server storage, no external image hosts, no CORS problems
     - Live preview of background changes
 - **Player Customization**:
     - Customizable player color via color picker
@@ -63,7 +63,7 @@ Features a configuration builder, live preview, and playable game mode.
 - Use **"Copy Link"** to generate a shareable URL with all your settings:
     - `cpus`: Number of CPU players (2 or 3)
     - `bgType`: Background type (`color` or `image`)
-    - `bg`: Background value (color hex code or image URL)
+    - `bg`: Background value (color hex code or embedded Base64 image)
     - `playerColor`: Player color (hex code, only if Customize is enabled)
     - `pname`: Player 1 name (only if not "Player 1")
     - `mode`: Game mode (`inclusion` = participant receives balls, `exclusion` = participant receives no balls)

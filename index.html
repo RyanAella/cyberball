@@ -211,6 +211,16 @@
       cursor: pointer;
       font-size: 16px;
     }
+    .avatar-hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .avatar-badge {
+      font-size: 13px;
+      color: #1e7e34;
+      margin-top: 4px;
+    }
     .modal-footer {
       display: flex;
       gap: 10px;
@@ -302,8 +312,10 @@
                 <input type="text" id="participantName" class="input-field" value="Player 1" placeholder="Enter player name" />
               </div>
               <div class="form-group">
-                <label>Bild-URL (kleines Bild über dem Avatar, optional)</label>
-                <input type="url" id="avatarUrl0" class="input-field" placeholder="https://example.com/photo.jpg" />
+                <label>Bild (kleines Bild über dem Avatar, Pflicht)</label>
+                <input type="file" id="avatarFile0" class="input-field" accept="image/*" />
+                <input type="hidden" id="avatarData0" />
+                <div class="avatar-hint">JPEG/PNG, wird automatisch verkleinert. Kein Server-Speicher: das Bild wird im Spiel-Link eingebettet.</div>
               </div>
               <div class="settings-section">
                 <h3>Co-Spieler (CPU)</h3>
@@ -491,7 +503,7 @@
       document.getElementById("totalThrows").value = totalThrows;
       document.getElementById("codePrefix").value = codePrefix;
       document.getElementById("redirectUrl").value = redirectUrl;
-      document.getElementById("avatarUrl0").value = participantAvatar;
+      document.getElementById("avatarData0").value = participantAvatar;
       buildCpuMetaFields(cpuCount, cpuNamesParam, avatarUrlsParam);
     }
 
@@ -505,16 +517,91 @@
         wrapper.className = "form-group";
         const nameVal = (savedNames && savedNames[i]) || `CPU ${i + 1}`;
         const avatarVal = (savedAvatars && savedAvatars[i]) || "";
+        const isDataUrl = avatarVal.startsWith("data:image");
         wrapper.innerHTML = `
           <label>CPU ${i + 1}</label>
           <input type="text" class="input-field cpu-name-field" data-index="${i}" placeholder="Name von CPU ${i + 1}" value="${nameVal}" />
-          <input type="url" class="input-field cpu-avatar-field" data-index="${i}" style="margin-top:6px" placeholder="Bild-URL (optional)" value="${avatarVal}" />
+          <input type="file" class="input-field cpu-avatar-file" data-index="${i}" style="margin-top:6px" accept="image/*" />
+          <input type="hidden" class="cpu-avatar-data" data-index="${i}" value="${avatarVal}" />
+          <div class="avatar-hint">Bild wird automatisch verkleinert und im Spiel-Link eingebettet.</div>
         `;
         container.appendChild(wrapper);
+        if (isDataUrl) {
+          const fileInput = wrapper.querySelector(".cpu-avatar-file");
+          fileInput.dataset.existingImage = "1";
+          fileInput.style.display = "none";
+          const badge = document.createElement("div");
+          badge.className = "avatar-badge";
+          badge.textContent = "✓ Bild vorhanden (aus Link übernommen)";
+          wrapper.appendChild(badge);
+        }
+        wrapper.querySelector(".cpu-avatar-file").addEventListener("change", (e) => {
+          const fileInput = e.target;
+          const hidden = wrapper.querySelector(`.cpu-avatar-data[data-index="${i}"]`);
+          handleAvatarFile(e, hidden, wrapper);
+          if (fileInput.dataset.existingImage) fileInput.style.display = "none";
+        });
       }
       container.querySelectorAll("input").forEach(input => {
         input.addEventListener("input", updatePreview);
       });
+    }
+
+    // ========== BILD-UPLOAD (Client-seitige Komprimierung → Base64) ==========
+    // Kein Server-Speicher: Das Bild wird automatisch auf max. 96×96 px verkleinert
+    // und als Data-URL direkt im Spiel-Link eingebettet.
+    function compressImageToDataUrl(file, maxDim = 96, quality = 0.8) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith("image/")) {
+          reject(new Error("Keine Bilddatei"));
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+            const w = Math.max(Math.round(img.width * scale), 1);
+            const h = Math.max(Math.round(img.height * scale), 1);
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          img.onerror = () => reject(new Error("Bild konnte nicht geladen werden"));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error("Datei konnte nicht gelesen werden"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function handleAvatarFile(event, hiddenFieldId, wrapper) {
+      const input = event.target;
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const hiddenField = typeof hiddenFieldId === "string"
+        ? document.getElementById(hiddenFieldId)
+        : hiddenFieldId;
+      if (!hiddenField || !wrapper) return;
+      input.disabled = true;
+      compressImageToDataUrl(file)
+        .then(dataUrl => {
+          hiddenField.value = dataUrl;
+          input.disabled = false;
+          let badge = wrapper.querySelector(".avatar-badge");
+          if (!badge) {
+            badge = document.createElement("div");
+            badge.className = "avatar-badge";
+            wrapper.appendChild(badge);
+          }
+          badge.textContent = "✓ Bild übernommen";
+        })
+        .catch(err => {
+          input.disabled = false;
+          alert("Fehler beim Verarbeiten des Bildes: " + err.message);
+        });
     }
 
     // Helper function
@@ -555,9 +642,9 @@
           document.querySelector(`.cpu-name-field[data-index="${i}"]`)?.value || `CPU ${i + 1}`
         ),
         avatars: [
-          document.getElementById("avatarUrl0")?.value || "",
+          document.getElementById("avatarData0")?.value || "",
           ...Array.from({ length: cpuCount }, (_, i) =>
-            document.querySelector(`.cpu-avatar-field[data-index="${i}"]`)?.value || ""
+            document.querySelector(`.cpu-avatar-data[data-index="${i}"]`)?.value || ""
           )
         ]
       };
@@ -661,7 +748,13 @@
     document.getElementById("bgImageUrl").addEventListener("input", updatePreview);
     document.getElementById("playerColor").addEventListener("input", updatePreview);
     document.getElementById("participantName").addEventListener("input", updatePreview);
-    document.getElementById("avatarUrl0").addEventListener("input", updatePreview);
+    const avatarFile0 = document.getElementById("avatarFile0");
+    if (avatarFile0) {
+      avatarFile0.addEventListener("change", (e) => {
+        const wrapper = e.target.closest(".form-group");
+        handleAvatarFile(e, document.getElementById("avatarData0"), wrapper);
+      });
+    }
 
     // Bei CPU-Anzahl-Änderung: Namen-/Bild-Felder neu aufbauen
     document.querySelectorAll('input[name="cpus"]').forEach((radio) => {

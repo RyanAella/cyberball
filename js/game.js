@@ -69,7 +69,11 @@ window.GameScene = class GameScene extends Phaser.Scene {
         this.avatarKeys = [];
         this.playersMeta.forEach((meta, index) => {
             const key = `avatar-${index}`;
-            if (meta.avatarUrl && this.load.image(key, meta.avatarUrl)) {
+            if (meta.avatarUrl) {
+                const oldBaseURL = this.load.baseURL;
+                this.load.setBaseURL('');
+                this.load.image(key, meta.avatarUrl);
+                this.load.setBaseURL(oldBaseURL);
                 this.avatarKeys.push(key);
             } else {
                 this.avatarKeys.push(null);

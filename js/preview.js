@@ -23,6 +23,21 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
         this.load.image('ball', 'ball.png');
         this.load.multiatlas('player', 'player.json');
 
+        // Load avatar images if URLs are provided
+        this.config.avatars = this.config.avatars || [];
+        this.config.avatars.forEach((url, i) => {
+            if (url && url.trim() !== '') {
+                try {
+                    const oldBaseURL = this.load.baseURL;
+                    this.load.setBaseURL('');
+                    this.load.image(`preview-avatar-${i}`, url);
+                    this.load.setBaseURL(oldBaseURL);
+                } catch (e) {
+                    console.error("Error loading avatar image:", e);
+                }
+            }
+        });
+
         // Load background image if URL is provided
         if (this.config.bgType === 'image' && this.config.bgImageUrl && this.config.bgImageUrl.trim() !== '') {
             try {
@@ -118,6 +133,13 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
         }).setOrigin(0.5);
         this.texts.push(nameText);
 
+        const player0AvatarKey = 'preview-avatar-0';
+        if (this.config.avatars[0] && this.textures.exists(player0AvatarKey)) {
+            const avatar = this.add.image(player0X, player0Y - 55 * scaleY, player0AvatarKey);
+            avatar.setDisplaySize(32, 32);
+            this.texts.push(avatar);
+        }
+
         this.ball = this.add.sprite(player0X - 25, player0Y - 16.67, 'ball');
         this.ball.setScale(scaleX);
 
@@ -141,6 +163,7 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
             ];
         }
 
+        const cpuNames = this.config.cpuNames || [];
         cpuPositions.forEach((pos, i) => {
             const cpu = this.add.sprite(pos.x, pos.y, 'player', 'idle/1.png');
             cpu.setScale(scaleX);
@@ -148,12 +171,20 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
                 cpu.play('idle');
             }
             this.players.push(cpu);
-            const cpuText = this.add.text(pos.x, pos.y + 50 * scaleY, `CPU ${i + 1}`, {
+            const cpuName = cpuNames[i] || `CPU ${i + 1}`;
+            const cpuText = this.add.text(pos.x, pos.y + 50 * scaleY, cpuName, {
                 fontFamily: 'Arial',
                 fontSize: '12px',
                 color: '#000000'
             }).setOrigin(0.5);
             this.texts.push(cpuText);
+
+            const avatarKey = `preview-avatar-${i + 1}`;
+            if (this.config.avatars[i + 1] && this.textures.exists(avatarKey)) {
+                const avatar = this.add.image(pos.x, pos.y - 55 * scaleY, avatarKey);
+                avatar.setDisplaySize(32, 32);
+                this.texts.push(avatar);
+            }
         });
     }
 
@@ -161,11 +192,12 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
         // Prüfe, ob sich die Bild-URL oder der Typ geändert hat
         const bgChanged = config.bgImageUrl !== this.config.bgImageUrl || config.bgType !== this.config.bgType;
         const cpuChanged = config.cpuCount !== this.config.cpuCount;
+        const avatarsChanged = JSON.stringify(config.avatars || []) !== JSON.stringify(this.config.avatars || []);
 
         this.config = { ...this.config, ...config };
 
-        // Szene neu starten, wenn sich Hintergrund oder CPU-Anzahl geändert hat
-        if (bgChanged || cpuChanged) {
+        // Szene neu starten, wenn sich Hintergrund, CPU-Anzahl oder Avatare geändert hat
+        if (bgChanged || cpuChanged || avatarsChanged) {
             this.scene.restart({ config: this.config });
         } else {
             // Nur die Szene aktualisieren, wenn sich andere Dinge geändert haben

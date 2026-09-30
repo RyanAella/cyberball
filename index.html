@@ -301,6 +301,14 @@
                 <label>Name</label>
                 <input type="text" id="participantName" class="input-field" value="Player 1" placeholder="Enter player name" />
               </div>
+              <div class="form-group">
+                <label>Bild-URL (kleines Bild über dem Avatar, optional)</label>
+                <input type="url" id="avatarUrl0" class="input-field" placeholder="https://example.com/photo.jpg" />
+              </div>
+              <div class="settings-section">
+                <h3>Co-Spieler (CPU)</h3>
+                <div id="cpuMetaContainer"></div>
+              </div>
               <div class="form-group checkbox-group">
                 <label>Customize</label>
                 <input type="checkbox" id="customizeCheckbox" class="checkbox" />
@@ -318,6 +326,34 @@
         <div class="settings-content" id="settingsContent">
           <div class="modal-body">
             <form class="participant-form" onsubmit="return false;">
+              <div class="settings-section">
+                <h3>Spielmodus</h3>
+                <div class="radio-group">
+                  <div class="radio-option">
+                    <input type="radio" id="modeInclusion" name="gameMode" value="inclusion" checked />
+                    <label for="modeInclusion">Spieler spielt mit (erhält Bälle)</label>
+                  </div>
+                  <div class="radio-option">
+                    <input type="radio" id="modeExclusion" name="gameMode" value="exclusion" />
+                    <label for="modeExclusion">Spieler wird ausgeschlossen (erhält keine Bälle)</label>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-section">
+                <h3>Spielende</h3>
+                <div class="form-group">
+                  <label for="totalThrows">Anzahl Würfe bis Spielende (0 = unbegrenzt)</label>
+                  <input type="number" id="totalThrows" class="input-field" value="30" min="0" max="500" />
+                </div>
+                <div class="form-group">
+                  <label for="codePrefix">Code-Präfix (z.B. Uni, LAB)</label>
+                  <input type="text" id="codePrefix" class="input-field" value="CB" maxlength="6" placeholder="CB" />
+                </div>
+                <div class="form-group">
+                  <label for="redirectUrl">Optional: Weiterleitung nach 5 Sek. (URL der Befragung)</label>
+                  <input type="url" id="redirectUrl" class="input-field" placeholder="https://www.soscisurvey.de/..." />
+                </div>
+              </div>
               <div class="settings-section">
                 <h3>CPU Players</h3>
                 <div class="radio-group">
@@ -394,6 +430,13 @@
     const playerColor = urlParams.get("playerColor") || "#FFFFFF";
     const playerName = urlParams.get("pname") || "Player 1";
     const customizeEnabled = !!urlParams.get("playerColor");
+    const gameMode = urlParams.get("mode") || "inclusion";
+    const totalThrows = Math.max(parseInt(urlParams.get("throws")) || 30, 0);
+    const codePrefix = urlParams.get("codePrefix") || "CB";
+    const redirectUrl = urlParams.get("redirect") ? decodeURIComponent(urlParams.get("redirect")) : "";
+    const cpuNamesParam = urlParams.get("cpuNames") ? decodeURIComponent(urlParams.get("cpuNames")).split("|") : [];
+    const avatarUrlsParam = urlParams.get("avatars") ? decodeURIComponent(urlParams.get("avatars")).split("|") : [];
+    const participantAvatar = urlParams.get("avatar0") ? decodeURIComponent(urlParams.get("avatar0")) : "";
 
     // ========== ENTWEDER SPIEL ODER BUILDER ANZEIGEN ==========
     if (hasGameParams) {
@@ -407,6 +450,17 @@
         bg: bgType === "color" ? bgColor : bgImageUrl,
         playerColor: customizeEnabled ? playerColor : "#FFFFFF",
         playerName: playerName,
+        gameMode: gameMode,
+        totalThrows: totalThrows,
+        codePrefix: codePrefix,
+        redirectUrl: redirectUrl,
+        players: [
+          { name: playerName, avatarUrl: participantAvatar },
+          ...Array.from({ length: cpuCount }, (_, i) => ({
+            name: cpuNamesParam[i] || `CPU ${i + 1}`,
+            avatarUrl: avatarUrlsParam[i] || ""
+          }))
+        ]
       };
       window.cyberballGameTrigger = true;
 
@@ -433,6 +487,34 @@
       document.getElementById("customizeCheckbox").checked = customizeEnabled;
       document.getElementById("playerColor").value = playerColor;
       document.getElementById("customizeSection").style.display = customizeEnabled ? "block" : "none";
+      document.querySelector(`input[name="gameMode"][value="${gameMode}"]`).checked = true;
+      document.getElementById("totalThrows").value = totalThrows;
+      document.getElementById("codePrefix").value = codePrefix;
+      document.getElementById("redirectUrl").value = redirectUrl;
+      document.getElementById("avatarUrl0").value = participantAvatar;
+      buildCpuMetaFields(cpuCount, cpuNamesParam, avatarUrlsParam);
+    }
+
+    // ========== DYNAMISCHE CPU-NAMEN/BILDER ==========
+    function buildCpuMetaFields(cpuCount, savedNames, savedAvatars) {
+      const container = document.getElementById("cpuMetaContainer");
+      if (!container) return;
+      container.innerHTML = "";
+      for (let i = 0; i < cpuCount; i++) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "form-group";
+        const nameVal = (savedNames && savedNames[i]) || `CPU ${i + 1}`;
+        const avatarVal = (savedAvatars && savedAvatars[i]) || "";
+        wrapper.innerHTML = `
+          <label>CPU ${i + 1}</label>
+          <input type="text" class="input-field cpu-name-field" data-index="${i}" placeholder="Name von CPU ${i + 1}" value="${nameVal}" />
+          <input type="url" class="input-field cpu-avatar-field" data-index="${i}" style="margin-top:6px" placeholder="Bild-URL (optional)" value="${avatarVal}" />
+        `;
+        container.appendChild(wrapper);
+      }
+      container.querySelectorAll("input").forEach(input => {
+        input.addEventListener("input", updatePreview);
+      });
     }
 
     // Helper function
@@ -464,8 +546,59 @@
         playerColor: document.getElementById("customizeCheckbox").checked
                 ? document.getElementById("playerColor")?.value || "#FFFFFF"
                 : "#FFFFFF",
-        playerName: document.getElementById("participantName")?.value || "Player 1"
+        playerName: document.getElementById("participantName")?.value || "Player 1",
+        gameMode: document.querySelector('input[name="gameMode"]:checked')?.value || "inclusion",
+        totalThrows: Math.max(parseInt(document.getElementById("totalThrows")?.value) || 30, 0),
+        codePrefix: document.getElementById("codePrefix")?.value || "CB",
+        redirectUrl: document.getElementById("redirectUrl")?.value || "",
+        cpuNames: Array.from({ length: cpuCount }, (_, i) =>
+          document.querySelector(`.cpu-name-field[data-index="${i}"]`)?.value || `CPU ${i + 1}`
+        ),
+        avatars: [
+          document.getElementById("avatarUrl0")?.value || "",
+          ...Array.from({ length: cpuCount }, (_, i) =>
+            document.querySelector(`.cpu-avatar-field[data-index="${i}"]`)?.value || ""
+          )
+        ]
       };
+    }
+
+    function buildGameParams(config, customizeChecked) {
+      const params = new URLSearchParams();
+      params.set("cpus", config.cpuCount);
+      params.set("bgType", config.bgType);
+
+      if (config.bgType === "color") {
+        params.set("bg", config.bgColor);
+      } else if (config.bgImageUrl) {
+        params.set("bg", encodeURIComponent(config.bgImageUrl));
+      }
+
+      if (customizeChecked) {
+        params.set("playerColor", config.playerColor);
+      }
+      if (config.playerName !== "Player 1") {
+        params.set("pname", config.playerName);
+      }
+
+      params.set("mode", config.gameMode);
+      params.set("throws", config.totalThrows);
+      if (config.codePrefix && config.codePrefix !== "CB") {
+        params.set("codePrefix", config.codePrefix);
+      }
+      if (config.redirectUrl) {
+        params.set("redirect", encodeURIComponent(config.redirectUrl));
+      }
+      if (config.cpuNames.some(n => n && n !== "CPU 1" && n !== "CPU 2" && n !== "CPU 3")) {
+        params.set("cpuNames", encodeURIComponent(config.cpuNames.join("|")));
+      }
+      if (config.avatars.slice(1).some(a => a)) {
+        params.set("avatars", encodeURIComponent(config.avatars.slice(1).join("|")));
+      }
+      if (config.avatars[0]) {
+        params.set("avatar0", encodeURIComponent(config.avatars[0]));
+      }
+      return params;
     }
 
     function updatePreview() {
@@ -525,31 +658,23 @@
     document.querySelectorAll('input[name="cpus"]').forEach((radio) => {
       radio.addEventListener("change", updatePreview);
     });
-    document.getElementById("bgColorValue").addEventListener("input", updatePreview);
     document.getElementById("bgImageUrl").addEventListener("input", updatePreview);
     document.getElementById("playerColor").addEventListener("input", updatePreview);
     document.getElementById("participantName").addEventListener("input", updatePreview);
+    document.getElementById("avatarUrl0").addEventListener("input", updatePreview);
+
+    // Bei CPU-Anzahl-Änderung: Namen-/Bild-Felder neu aufbauen
+    document.querySelectorAll('input[name="cpus"]').forEach((radio) => {
+      radio.addEventListener("change", () => {
+        buildCpuMetaFields(parseInt(radio.value) || 2);
+        updatePreview();
+      });
+    });
 
     // ========== BUTTONS ==========
     document.getElementById('copyLinkBtn').addEventListener('click', () => {
       const config = getConfig();
-      const params = new URLSearchParams();
-
-      params.set('cpus', config.cpuCount);
-      params.set('bgType', config.bgType);
-
-      if (config.bgType === 'color') {
-        params.set('bg', config.bgColor);
-      } else if (config.bgImageUrl) {
-        params.set('bg', encodeURIComponent(config.bgImageUrl));
-      }
-
-      if (document.getElementById('customizeCheckbox').checked) {
-        params.set('playerColor', config.playerColor);
-      }
-      if (config.playerName !== 'Player 1') {
-        params.set('pname', config.playerName);
-      }
+      const params = buildGameParams(config, document.getElementById('customizeCheckbox').checked);
 
       // ✅ FIX: Universelle URL (funktioniert mit/ohne /cyberball/)
       const currentPath = window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, '');
@@ -562,23 +687,7 @@
 
     document.getElementById("previewBtn").addEventListener("click", () => {
       const config = getConfig();
-      const params = new URLSearchParams({
-        cpus: config.cpuCount,
-        bgType: config.bgType,
-      });
-
-      if (config.bgType === "color") {
-        params.set("bg", config.bgColor);
-      } else if (config.bgImageUrl) {
-        params.set("bg", encodeURIComponent(config.bgImageUrl));
-      }
-
-      if (document.getElementById("customizeCheckbox").checked) {
-        params.set("playerColor", config.playerColor);
-      }
-      if (config.playerName !== "Player 1") {
-        params.set("pname", config.playerName);
-      }
+      const params = buildGameParams(config, document.getElementById("customizeCheckbox").checked);
 
       // ✅ FIX: Gleiche URL-Logik wie Copy Link
       const currentPath = window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, '');
@@ -596,6 +705,17 @@
                 ? config.playerColor
                 : "#FFFFFF",
         playerName: config.playerName,
+        gameMode: config.gameMode,
+        totalThrows: config.totalThrows,
+        codePrefix: config.codePrefix,
+        redirectUrl: config.redirectUrl,
+        players: [
+          { name: config.playerName, avatarUrl: config.avatars[0] || "" },
+          ...Array.from({ length: config.cpuCount }, (_, i) => ({
+            name: config.cpuNames[i] || `CPU ${i + 1}`,
+            avatarUrl: config.avatars[i + 1] || ""
+          }))
+        ]
       };
       window.cyberballGameTrigger = true;
 
@@ -608,8 +728,6 @@
         window.cyberballGameInstance.scene.start("default");
       }
     });
-
-    window.cyberballConfig = { cpuCount: cpuCount };
   });
 </script>
 </body>

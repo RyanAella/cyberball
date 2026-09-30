@@ -17,11 +17,37 @@ window.getGameConfig = function getGameConfig() {
     };
 };
 
+// ========== HELPER: CONFIG AUS URL ODER window.cyberballConfig ==========
+window.getCyberballParam = function getCyberballParam(name, fallback) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has(name)) return urlParams.get(name);
+    if (window.cyberballConfig && window.cyberballConfig[name] !== undefined && window.cyberballConfig[name] !== null) {
+        return String(window.cyberballConfig[name]);
+    }
+    return fallback;
+};
+
+// ========== HELPER: COMPLETION CODE GENERIEREN ==========
+window.generateCompletionCode = function generateCompletionCode(prefix) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return (prefix || 'CB') + '-' + code;
+};
+
 // ========== GAME SCENE CLASS ==========
 window.GameScene = class GameScene extends Phaser.Scene {
     preload() {
         // Construct correct base path for assets
-        this.load.setBaseURL(window.location.pathname + '/assets/');
+        const basePath = window.location.pathname.replace(/index\.html$/, '');
+        this.load.setBaseURL(basePath + 'assets/');
+
+        // Player metadata (names & avatar images) from config
+        this.playersMeta = (window.cyberballConfig && window.cyberballConfig.players) || [];
+        while (this.playersMeta.length < 4) this.playersMeta.push({});
+
         this.load.image('ball', 'ball.png');
         this.load.multiatlas('player', 'player.json');
 
@@ -38,10 +64,31 @@ window.GameScene = class GameScene extends Phaser.Scene {
             this.load.image('background', imageUrl);
             this.load.setBaseURL(oldBaseURL);
         }
+
+        // Load avatar images for all players (unique keys)
+        this.avatarKeys = [];
+        this.playersMeta.forEach((meta, index) => {
+            const key = `avatar-${index}`;
+            if (meta.avatarUrl && this.load.image(key, meta.avatarUrl)) {
+                this.avatarKeys.push(key);
+            } else {
+                this.avatarKeys.push(null);
+            }
+        });
     }
 
     create() {
         this.isCatching = false;
+        this.gameOver = false;
+
+        // Config
+        const cfg = window.cyberballConfig || {};
+        this.gameMode = cfg.gameMode || 'inclusion';           // 'inclusion' | 'exclusion'
+        this.totalThrows = cfg.totalThrows || 30;
+        this.throwCount = 0;
+        this.codePrefix = cfg.codePrefix || 'CB';
+        this.codeLength = cfg.codeLength || 8;
+        this.redirectUrl = cfg.redirectUrl || '';
 
         // Background
         const bgUrlParams = new URLSearchParams(window.location.search);
@@ -60,10 +107,8 @@ window.GameScene = class GameScene extends Phaser.Scene {
         }
 
         // Players
-        const cpuCount = window.cyberballConfig?.cpuCount || 2;
-        const urlParams = new URLSearchParams(window.location.search);
-        const playerColor = urlParams.get('playerColor') || window.cyberballConfig?.playerColor || '#FFFFFF';
-        const playerName = urlParams.get('pname') || window.cyberballConfig?.playerName || 'Player 1';
+        const cpuCount = cfg.cpuCount || 2;
+        const playerColor = cfg.playerColor || '#FFFFFF';
 
         const playerTint = playerColor.startsWith('#') ?
             parseInt(playerColor.slice(1), 16) :
@@ -96,14 +141,24 @@ window.GameScene = class GameScene extends Phaser.Scene {
             player.setInteractive();
         });
 
-        const playerNames = [playerName, ...Array.from({length: cpuCount}, (_, i) => `CPU ${i + 1}`)];
+        // Names & avatars from playersMeta
         this.players.forEach((player, index) => {
-            this.add.text(
+            const meta = this.playersMeta[index] || {};
+            const name = meta.name || (index === 0 ? 'Player 1' : `CPU ${index}`);
+            const nameText = this.add.text(
                 player.x,
                 player.y + 50,
-                playerNames[index],
+                name,
                 { fontFamily: 'Arial', fontSize: '16px', color: '#000000' }
             ).setOrigin(0.5);
+            nameText.setDepth(10);
+
+            const avatarKey = this.avatarKeys[index];
+            if (avatarKey && this.textures.exists(avatarKey)) {
+                const avatar = this.add.image(player.x, player.y - 80, avatarKey);
+                avatar.setDisplaySize(48, 48);
+                avatar.setDepth(10);
+            }
         });
 
         // Animations
@@ -176,8 +231,60 @@ window.GameScene = class GameScene extends Phaser.Scene {
         };
         this.setPlayerAnimations();
 
+        // Throw counter UI (hidden if totalThrows is 0)
+        if (this.totalThrows > 0) {
+            this.throwsText = this.add.text(10, 10, `Würfe: 0 / ${this.totalThrows}`, {
+                fontFamily: 'Arial', fontSize: '16px', color: '#000000', backgroundColor: 'rgba(255,255,255,0.7)'
+            });
+            this.throwsText.setDepth(20);
+        }
+
+        this.showEndScreen = () => {
+            if (this.gameOver) return;
+            this.gameOver = true;
+
+            const code = window.generateCompletionCode ?
+                window.generateCompletionCode(this.codePrefix) :
+                this.codePrefix + '-END';
+
+            window.cyberballCompletionCode = code;
+
+            const overlay = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.75);
+            overlay.setDepth(100);
+
+            const title = this.add.text(400, 180, 'Das Spiel ist beendet.', {
+                fontFamily: 'Arial', fontSize: '32px', color: '#ffffff'
+            }).setOrigin(0.5);
+            title.setDepth(101);
+
+            const codeText = this.add.text(400, 260, 'Dein Code:', {
+                fontFamily: 'Arial', fontSize: '20px', color: '#cccccc'
+            }).setOrigin(0.5);
+            codeText.setDepth(101);
+
+            const codeValue = this.add.text(400, 320, code, {
+                fontFamily: 'Arial', fontSize: '48px', color: '#ffffff', fontStyle: 'bold'
+            }).setOrigin(0.5);
+            codeValue.setDepth(101);
+
+            const info = this.add.text(400, 400,
+                'Bitte gib diesen Code in der Online-Befragung ein,\num zu bestätigen, dass du das Spiel gespielt hast.',
+                {
+                    fontFamily: 'Arial', fontSize: '16px', color: '#cccccc',
+                    align: 'center', wordWrap: { width: 600 }
+                }).setOrigin(0.5);
+            info.setDepth(101);
+
+            if (this.redirectUrl) {
+                this.time.delayedCall(5000, () => {
+                    window.location.href = this.redirectUrl;
+                });
+            }
+        };
+
         this.players.forEach((player, index) => {
             player.on('pointerdown', () => {
+                if (this.gameOver) return;
                 if (this.currentHolder === 0 && index !== 0) {
                     this.players[0].flipX = player.x < this.players[0].x;
                     this.players[0].play('throw');
@@ -193,6 +300,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
         });
 
         this.physics.add.overlap(this.ball, this.players, (ball, player) => {
+            if (this.gameOver) return;
             const playerIndex = this.players.indexOf(player);
             if (!this.ballInMotion) return;
 
@@ -205,21 +313,48 @@ window.GameScene = class GameScene extends Phaser.Scene {
                 ball.setPosition(catchPos.x, catchPos.y);
                 player.play('catch');
 
+                this.throwCount++;
+                if (this.throwsText) {
+                    this.throwsText.setText(`Würfe: ${this.throwCount} / ${this.totalThrows}`);
+                }
+
                 this.time.delayedCall(500, () => {
                     player.play('active');
                     this.isCatching = false;
                     if (playerIndex !== 0) {
                         this.time.delayedCall(500, () => {
+                            if (this.gameOver) return;
+
+                            if (this.throwCount >= this.totalThrows && this.totalThrows > 0) {
+                                this.showEndScreen();
+                                return;
+                            }
+
                             player.play('throw');
                             const cpuThrowPos = this.getThrowPosition(player);
                             this.ball.setPosition(cpuThrowPos.x, cpuThrowPos.y);
-                            const otherPlayers = this.players.filter((_, index) => index !== playerIndex);
-                            const randomTarget = Phaser.Math.RND.pick(otherPlayers);
-                            randomTarget.flipX = player.x < randomTarget.x;
+
+                            let target;
+                            if (this.gameMode === 'exclusion') {
+                                // CPUs never throw to the human player (index 0)
+                                const otherCpus = this.players.filter((_, idx) => idx !== playerIndex && idx !== 0);
+                                target = Phaser.Math.RND.pick(otherCpus);
+                                if (!target) target = this.players[playerIndex === 1 ? 2 : 1] || this.players[0];
+                            } else {
+                                const otherPlayers = this.players.filter((_, idx) => idx !== playerIndex);
+                                target = Phaser.Math.RND.pick(otherPlayers);
+                            }
+
+                            target.flipX = player.x < target.x;
                             this.ballInMotion = true;
-                            this.currentHolder = this.players.indexOf(randomTarget);
-                            this.physics.moveTo(this.ball, randomTarget.x, randomTarget.y, 600);
+                            this.currentHolder = this.players.indexOf(target);
+                            this.physics.moveTo(this.ball, target.x, target.y, 600);
                         });
+                    } else {
+                        // Human caught the ball; check end after catch completes
+                        if (this.throwCount >= this.totalThrows && this.totalThrows > 0) {
+                            this.showEndScreen();
+                        }
                     }
                 });
             }
@@ -227,7 +362,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
     }
 
     update() {
-        if (this.players && this.players[0]) {
+        if (this.players && this.players[0] && !this.gameOver) {
             if (this.ballInMotion) {
                 this.players.forEach(player => {
                     const playerIndex = this.players.indexOf(player);

@@ -40,8 +40,9 @@ window.generateCompletionCode = function generateCompletionCode(prefix) {
 // ========== GAME SCENE CLASS ==========
 window.GameScene = class GameScene extends Phaser.Scene {
     preload() {
-        // Construct correct base path for assets
-        const basePath = window.location.pathname.replace(/index\.html$/, '');
+        // Construct correct base path for assets (handles /cyberball, /cyberball/, /index.html, /cyberball/index.html)
+        let basePath = window.location.pathname.replace(/index\.html$/, '');
+        if (!basePath.endsWith('/')) basePath += '/';
         this.load.setBaseURL(basePath + 'assets/');
 
         // Player metadata (names & avatar images) from config

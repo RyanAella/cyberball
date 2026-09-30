@@ -599,6 +599,7 @@
             wrapper.appendChild(badge);
           }
           badge.textContent = "✓ Bild übernommen";
+          updatePreview();
         })
         .catch(err => {
           input.disabled = false;

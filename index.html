@@ -781,8 +781,9 @@
       const config = getConfig();
       const params = buildGameParams(config, document.getElementById('customizeCheckbox').checked);
 
-      // ✅ FIX: Universelle URL (funktioniert mit/ohne /cyberball/)
-      const currentPath = window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, '');
+      // ✅ FIX: Universelle URL (trailing slash erzwingen, sonst 404 auf manchen Servern)
+      let currentPath = window.location.pathname.replace(/index\.html$/, '');
+      if (!currentPath.endsWith('/')) currentPath += '/';
       const url = window.location.origin + currentPath + '?' + params.toString();
 
       navigator.clipboard.writeText(url)
@@ -795,7 +796,8 @@
       const params = buildGameParams(config, document.getElementById("customizeCheckbox").checked);
 
       // ✅ FIX: Gleiche URL-Logik wie Copy Link
-      const currentPath = window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, '');
+      let currentPath = window.location.pathname.replace(/index\.html$/, '');
+      if (!currentPath.endsWith('/')) currentPath += '/';
       const newUrl = currentPath + '?' + params.toString();
       window.history.pushState({}, "", newUrl);
 

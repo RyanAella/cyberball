@@ -31,7 +31,8 @@ Features a configuration builder, live preview, and playable game mode.
     - Optional automatic redirect to your survey URL after 5 seconds
 - **Player Names & Avatar Images**:
     - Individual names for the participant and each CPU player
-    - Optional small image (photo/avatar) shown above each player
+    - Small image (photo/avatar) shown above each player
+    - Upload image files directly in the builder – they are compressed in the browser (max 96×96 px) and embedded in the game link (no server upload, no external image host, no CORS problems)
 
 ---
 

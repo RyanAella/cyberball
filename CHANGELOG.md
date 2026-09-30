@@ -4,6 +4,18 @@ All notable changes to the Cyberball game.
 
 ---
 
+## [Unreleased]
+### Added
+- **Two game modes** – `inclusion` (participant plays along and receives balls) and `exclusion` (participant receives no balls), selectable via URL parameter `mode`
+- **Custom CPU names** – Individual names for each CPU player, configurable in the builder (`cpuNames` URL parameter)
+- **Avatar images above players** – Optional small images (photo/avatar) above each player, including the participant (`avatar0`, `avatars` URL parameters)
+- **Game end with completion code** – Configurable number of throws (`throws`); at the end a randomly generated code (prefix via `codePrefix`) is displayed for verification in the online survey
+- **Optional redirect to survey** – Automatic redirect to a survey URL after the game ends (`redirect` parameter, 5 seconds delay)
+- **Throw counter** – Live display of throws played vs. total
+
+### Fixed
+- **Asset base path with `index.html` in URL** – Base URL no longer appends `/assets/` to `/index.html`, fixing 404s when opening the game via `index.html?...`
+
 ## [0.6.2] – 2026-09-01
 
 ### Added

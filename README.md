@@ -22,6 +22,16 @@ Features a configuration builder, live preview, and playable game mode.
     - Customizable Player 1 name
 - **Live Preview**: Phaser-based preview showing exact game appearance with selected settings (including player name, background)
 - **Shareable Configurations**: Generate URLs to share your setup with others
+- **Game Modes**:
+    - **Inclusion**: The participant plays along and receives balls
+    - **Exclusion**: The participant is excluded \u2013 CPUs never throw the ball to them
+- **Game End & Completion Code**:
+    - Configurable number of throws until the game ends (e.g., 30)
+    - At the end, a randomly generated completion code is shown that participants enter in your online survey to prove they played
+    - Optional automatic redirect to your survey URL after 5 seconds
+- **Player Names & Avatar Images**:
+    - Individual names for the participant and each CPU player
+    - Optional small image (photo/avatar) shown above each player
 
 ---
 
@@ -55,9 +65,16 @@ Features a configuration builder, live preview, and playable game mode.
     - `bg`: Background value (color hex code or image URL)
     - `playerColor`: Player color (hex code, only if Customize is enabled)
     - `pname`: Player 1 name (only if not "Player 1")
+    - `mode`: Game mode (`inclusion` = participant receives balls, `exclusion` = participant receives no balls)
+    - `throws`: Number of throws until the game ends (0 = unlimited)
+    - `codePrefix`: Prefix of the completion code (default `CB`)
+    - `redirect`: Optional URL to redirect to after the game ends (after 5 seconds)
+    - `cpuNames`: CPU names separated by `|` (URL-encoded)
+    - `avatars`: CPU avatar image URLs separated by `|` (URL-encoded)
+    - `avatar0`: Avatar image URL for the participant
 - Example URL:
 ```
-https://your-domain.com/cyberball/?cpus=2&bgType=image&bg=https%3A%2F%2Fi.imgur.com%2Fexample.jpg&playerColor=%23FF0000&pname=Max
+https://your-domain.com/cyberball/?cpus=2&bgType=color&bg=%23f5f5f5&mode=exclusion&throws=30&codePrefix=LAB&pname=Max&cpuNames=Ben%7CLisa
 ```
 
 - When a user opens the link, they see the **configuration view** with your settings pre-filled

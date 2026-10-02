@@ -1,7 +1,15 @@
 # Cyberball
 
-A simple Phaser 3 based ball passing game with configurable player setup and customizable backgrounds.
-Features a configuration builder, live preview, and playable game mode.
+> A configurable **Phaser 3** ball-passing game for psychological research (ostracism paradigm): build your own setup with a live preview, share it as a single link, and embed it in any online study — no server required.
+
+**[▶ Play the live demo](https://ryanaella.github.io/cyberball/)**
+
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6%2B-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![Phaser 3](https://img.shields.io/badge/Phaser-3-7957D5?style=flat-square&logo=phaser&logoColor=white)
+
+<!-- TODO: Add a gameplay screenshot or GIF here for maximum impact, e.g.: -->
+<!-- ![Cyberball gameplay](docs/gameplay.gif) -->
 
 ---
 
@@ -32,7 +40,8 @@ Features a configuration builder, live preview, and playable game mode.
 - **Player Names & Avatar Images**:
     - Individual names for the participant and each CPU player
     - Small image (photo/avatar) shown above each player
-    - Upload image files directly in the builder – they are compressed in the browser (max 96×96 px) and embedded in the game link (no server upload, no external image host, no CORS problems)
+    - Upload image files directly in the builder – they ar
+e compressed in the browser (max 96×96 px) and embedded in the game link (no server upload, no external image host, no CORS problems)
 
 ---
 
@@ -70,7 +79,8 @@ Features a configuration builder, live preview, and playable game mode.
     - `throws`: Number of throws until the game ends (0 = unlimited)
     - `codePrefix`: Prefix of the completion code (default `CB`)
     - `redirect`: Optional URL to redirect to after the game ends (after 5 seconds)
-    - `cpuNames`: CPU names separated by `|` (URL-encoded)
+    - `cpuNames`: CPU names separated by `|` (URL-encod
+ed)
     - `avatars`: CPU avatar image URLs separated by `|` (URL-encoded)
     - `avatar0`: Avatar image URL for the participant
 - Example URL:
@@ -135,7 +145,8 @@ For best results with background images:
     - [Unsplash](https://unsplash.com/) (use "Download" → copy link)
     - Any CDN or static file host
 3. **Image size**: 800x600px or larger for best fit
-4. **CORS**: Some hosts may block external loading. Use CORS-enabled hosts like Imgur.
+4. **CORS**: Some hosts may block external loading. Use CORS-enabled hos
+ts like Imgur.
 
 ---
 

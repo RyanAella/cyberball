@@ -58,7 +58,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
         const bgValue = bgUrlParams.get('bg');
 
         if (bgType === 'image' && bgValue) {
-            const imageUrl = decodeURIComponent(bgValue);
+            const imageUrl = bgValue;
             // Temporarily reset base URL for absolute URLs
             const oldBaseURL = this.load.baseURL;
             this.load.setBaseURL('');

@@ -21,6 +21,8 @@ window.getGameConfig = function getGameConfig() {
 window.getCyberballParam = function getCyberballParam(name, fallback) {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has(name)) return urlParams.get(name);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    if (hashParams.has(name)) return hashParams.get(name);
     if (window.cyberballConfig && window.cyberballConfig[name] !== undefined && window.cyberballConfig[name] !== null) {
         return String(window.cyberballConfig[name]);
     }
@@ -53,9 +55,8 @@ window.GameScene = class GameScene extends Phaser.Scene {
         this.load.multiatlas('player', 'player.json');
 
         // Load background image if specified in URL
-        const bgUrlParams = new URLSearchParams(window.location.search);
-        const bgType = bgUrlParams.get('bgType');
-        const bgValue = bgUrlParams.get('bg');
+        const bgType = window.getCyberballParam('bgType', 'color');
+        const bgValue = window.getCyberballParam('bg', '');
 
         if (bgType === 'image' && bgValue) {
             const imageUrl = bgValue;
@@ -96,9 +97,8 @@ window.GameScene = class GameScene extends Phaser.Scene {
         this.redirectUrl = cfg.redirectUrl || '';
 
         // Background
-        const bgUrlParams = new URLSearchParams(window.location.search);
-        const bgType = bgUrlParams.get('bgType') || 'color';
-        const bgValue = bgUrlParams.get('bg') || '#f5f5f5';
+        const bgType = window.getCyberballParam('bgType', 'color');
+        const bgValue = window.getCyberballParam('bg', '#f5f5f5');
 
         if (bgType === 'color') {
             this.cameras.main.setBackgroundColor(bgValue);

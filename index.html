@@ -446,13 +446,15 @@
   document.addEventListener("DOMContentLoaded", function() {
     // URL-Parameter parsen (funktioniert mit und ohne index.html)
     const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const getParam = (key) => urlParams.get(key) || hashParams.get(key);
     const hasGameParams = urlParams.has("cpus");
 
     const cpuCount = Math.min(Math.max(parseInt(urlParams.get("cpus")) || 2, 2), 3);
     const bgType = urlParams.get("bgType") || "color";
-    const bgColor = urlParams.get("bg") || "#f5f5f5";
-    const bgImageUrl = bgType === "image" && urlParams.get("bg")
-            ? urlParams.get("bg")
+    const bgColor = getParam("bg") || "#f5f5f5";
+    const bgImageUrl = bgType === "image" && getParam("bg")
+            ? getParam("bg")
             : "";
     const playerColor = urlParams.get("playerColor") || "#FFFFFF";
     const playerName = urlParams.get("pname") || "Player 1";
@@ -462,8 +464,8 @@
     const codePrefix = urlParams.get("codePrefix") || "CB";
     const redirectUrl = urlParams.get("redirect") || "";
     const cpuNamesParam = urlParams.get("cpuNames") ? urlParams.get("cpuNames").split("|") : [];
-    const avatarUrlsParam = urlParams.get("avatars") ? urlParams.get("avatars").split("|") : [];
-    const participantAvatar = urlParams.get("avatar0") || "";
+    const avatarUrlsParam = getParam("avatars") ? getParam("avatars").split("|") : [];
+    const participantAvatar = getParam("avatar0") || "";
 
     // ========== ENTWEDER SPIEL ODER BUILDER ANZEIGEN ==========
     if (hasGameParams) {
@@ -658,10 +660,11 @@
       params.set("cpus", config.cpuCount);
       params.set("bgType", config.bgType);
 
+      const hashParams = new URLSearchParams();
       if (config.bgType === "color") {
         params.set("bg", config.bgColor);
       } else if (config.bgImageUrl) {
-        params.set("bg", config.bgImageUrl);
+        hashParams.set("bg", config.bgImageUrl);
       }
 
       if (customizeChecked) {
@@ -683,12 +686,12 @@
         params.set("cpuNames", config.cpuNames.join("|"));
       }
       if (config.avatars.slice(1).some(a => a)) {
-        params.set("avatars", config.avatars.slice(1).join("|"));
+        hashParams.set("avatars", config.avatars.slice(1).join("|"));
       }
       if (config.avatars[0]) {
-        params.set("avatar0", config.avatars[0]);
+        hashParams.set("avatar0", config.avatars[0]);
       }
-      return params;
+      return { params, hashParams };
     }
 
     function updatePreview() {
@@ -796,12 +799,13 @@
     // ========== BUTTONS ==========
     document.getElementById('copyLinkBtn').addEventListener('click', () => {
       const config = getConfig();
-      const params = buildGameParams(config, document.getElementById('customizeCheckbox').checked);
+      const { params, hashParams } = buildGameParams(config, document.getElementById('customizeCheckbox').checked);
 
       // ✅ FIX: Universelle URL (trailing slash erzwingen, sonst 404 auf manchen Servern)
       let currentPath = window.location.pathname.replace(/index\.html$/, '');
       if (!currentPath.endsWith('/')) currentPath += '/';
-      const url = window.location.origin + currentPath + '?' + params.toString();
+      const hash = hashParams.toString();
+      const url = window.location.origin + currentPath + '?' + params.toString() + (hash ? '#' + hash : '');
 
       navigator.clipboard.writeText(url)
               .then(() => alert(`✅ Link kopiert!\n\n${url}\n\nÖffne diesen Link in einem neuen Tab, um das Spiel direkt zu starten.`))
@@ -810,12 +814,13 @@
 
     document.getElementById("previewBtn").addEventListener("click", () => {
       const config = getConfig();
-      const params = buildGameParams(config, document.getElementById("customizeCheckbox").checked);
+      const { params, hashParams } = buildGameParams(config, document.getElementById("customizeCheckbox").checked);
 
       // ✅ FIX: Gleiche URL-Logik wie Copy Link
       let currentPath = window.location.pathname.replace(/index\.html$/, '');
       if (!currentPath.endsWith('/')) currentPath += '/';
-      const newUrl = currentPath + '?' + params.toString();
+      const hash = hashParams.toString();
+      const newUrl = currentPath + '?' + params.toString() + (hash ? '#' + hash : '');
       window.history.pushState({}, "", newUrl);
 
       document.getElementById("config-view").classList.add("hide");

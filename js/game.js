@@ -166,21 +166,21 @@ window.GameScene = class GameScene extends Phaser.Scene {
             }
         });
 
-        // Animations
-        this.anims.create({
+        // Animations (global, only register once per page load)
+        if (!this.anims.exists('active')) this.anims.create({
             key: 'active',
             frames: this.anims.generateFrameNames('player', { start: 1, end: 1, prefix: 'active/', suffix: '.png' })
         });
-        this.anims.create({
+        if (!this.anims.exists('idle')) this.anims.create({
             key: 'idle',
             frames: this.anims.generateFrameNames('player', { start: 1, end: 1, prefix: 'idle/', suffix: '.png' })
         });
-        this.anims.create({
+        if (!this.anims.exists('throw')) this.anims.create({
             key: 'throw',
             frameRate: 12,
             frames: this.anims.generateFrameNames('player', { start: 1, end: 3, prefix: 'throw/', suffix: '.png' })
         });
-        this.anims.create({
+        if (!this.anims.exists('catch')) this.anims.create({
             key: 'catch',
             frames: this.anims.generateFrameNames('player', { start: 1, end: 1, prefix: 'catch/', suffix: '.png' }),
             duration: 500,

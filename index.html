@@ -452,7 +452,7 @@
     const bgType = urlParams.get("bgType") || "color";
     const bgColor = urlParams.get("bg") || "#f5f5f5";
     const bgImageUrl = bgType === "image" && urlParams.get("bg")
-            ? decodeURIComponent(urlParams.get("bg"))
+            ? urlParams.get("bg")
             : "";
     const playerColor = urlParams.get("playerColor") || "#FFFFFF";
     const playerName = urlParams.get("pname") || "Player 1";
@@ -460,10 +460,10 @@
     const gameMode = urlParams.get("mode") || "inclusion";
     const totalThrows = Math.max(parseInt(urlParams.get("throws")) || 30, 0);
     const codePrefix = urlParams.get("codePrefix") || "CB";
-    const redirectUrl = urlParams.get("redirect") ? decodeURIComponent(urlParams.get("redirect")) : "";
-    const cpuNamesParam = urlParams.get("cpuNames") ? decodeURIComponent(urlParams.get("cpuNames")).split("|") : [];
-    const avatarUrlsParam = urlParams.get("avatars") ? decodeURIComponent(urlParams.get("avatars")).split("|") : [];
-    const participantAvatar = urlParams.get("avatar0") ? decodeURIComponent(urlParams.get("avatar0")) : "";
+    const redirectUrl = urlParams.get("redirect") || "";
+    const cpuNamesParam = urlParams.get("cpuNames") ? urlParams.get("cpuNames").split("|") : [];
+    const avatarUrlsParam = urlParams.get("avatars") ? urlParams.get("avatars").split("|") : [];
+    const participantAvatar = urlParams.get("avatar0") || "";
 
     // ========== ENTWEDER SPIEL ODER BUILDER ANZEIGEN ==========
     if (hasGameParams) {
@@ -661,7 +661,7 @@
       if (config.bgType === "color") {
         params.set("bg", config.bgColor);
       } else if (config.bgImageUrl) {
-        params.set("bg", encodeURIComponent(config.bgImageUrl));
+        params.set("bg", config.bgImageUrl);
       }
 
       if (customizeChecked) {
@@ -677,16 +677,16 @@
         params.set("codePrefix", config.codePrefix);
       }
       if (config.redirectUrl) {
-        params.set("redirect", encodeURIComponent(config.redirectUrl));
+        params.set("redirect", config.redirectUrl);
       }
       if (config.cpuNames.some(n => n && n !== "CPU 1" && n !== "CPU 2" && n !== "CPU 3")) {
-        params.set("cpuNames", encodeURIComponent(config.cpuNames.join("|")));
+        params.set("cpuNames", config.cpuNames.join("|"));
       }
       if (config.avatars.slice(1).some(a => a)) {
-        params.set("avatars", encodeURIComponent(config.avatars.slice(1).join("|")));
+        params.set("avatars", config.avatars.slice(1).join("|"));
       }
       if (config.avatars[0]) {
-        params.set("avatar0", encodeURIComponent(config.avatars[0]));
+        params.set("avatar0", config.avatars[0]);
       }
       return params;
     }

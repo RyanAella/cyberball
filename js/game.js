@@ -128,7 +128,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
         if (cpuCount === 2) {
             cpuPositions = [{ x: 200, y: 300 }, { x: 600, y: 300 }];
         } else if (cpuCount === 3) {
-            cpuPositions = [{ x: 200, y: 300 }, { x: 400, y: 100 }, { x: 600, y: 300 }];
+            cpuPositions = [{ x: 200, y: 320 }, { x: 400, y: 180 }, { x: 600, y: 320 }];
         } else {
             cpuPositions = [{ x: 200, y: 300 }, { x: 600, y: 300 }];
         }
@@ -223,26 +223,65 @@ window.GameScene = class GameScene extends Phaser.Scene {
         this.ball.setCollideWorldBounds(false);
         this.ball.setVisible(true);
 
-        this.time.delayedCall(10, () => {
-            const handPos = this.getHandPosition(this.players[0]);
-            this.ball.setPosition(handPos.x, handPos.y);
-        });
-
         this.setPlayerAnimations = function() {
             this.players.forEach((player, index) => {
                 if (index === this.currentHolder) player.play('active');
                 else player.play('idle');
             });
         };
+
+        // CPU throws automatically from its current position
+        this.cpuThrow = (playerIndex) => {
+            const player = this.players[playerIndex];
+            player.play('throw');
+            const throwPos = this.getThrowPosition(player);
+            this.ball.setPosition(throwPos.x, throwPos.y);
+
+            let target;
+            if (this.gameMode === 'exclusion') {
+                const otherCpus = this.players.filter((_, idx) => idx !== playerIndex && idx !== 0);
+                target = Phaser.Math.RND.pick(otherCpus);
+                if (!target) target = this.players[playerIndex === 1 ? 2 : 1] || this.players[0];
+            } else {
+                const otherPlayers = this.players.filter((_, idx) => idx !== playerIndex);
+                target = Phaser.Math.RND.pick(otherPlayers);
+            }
+
+            target.flipX = player.x < target.x;
+            this.ballInMotion = true;
+            this.currentHolder = this.players.indexOf(target);
+            this.physics.moveTo(this.ball, target.x, target.y, 600);
+        };
+
+        // Auto start: ball starts with a random CPU, countdown, then first throw
+        this.gameStarted = false;
+        const starterIndex = Phaser.Math.Between(1, this.players.length - 1);
+        this.currentHolder = starterIndex;
+        const startPos = this.getHandPosition(this.players[starterIndex]);
+        this.ball.setPosition(startPos.x, startPos.y);
         this.setPlayerAnimations();
 
-        // Throw counter UI (hidden if totalThrows is 0)
-        if (this.totalThrows > 0) {
-            this.throwsText = this.add.text(10, 10, `Würfe: 0 / ${this.totalThrows}`, {
-                fontFamily: 'Arial', fontSize: '16px', color: '#000000', backgroundColor: 'rgba(255,255,255,0.7)'
-            });
-            this.throwsText.setDepth(20);
-        }
+        const countdownText = this.add.text(400, 300, '3', {
+            fontFamily: 'Arial', fontSize: '64px', color: '#000000', fontStyle: 'bold',
+            backgroundColor: 'rgba(255,255,255,0.7)', padding: { x: 20, y: 10 }
+        }).setOrigin(0.5);
+        countdownText.setDepth(50);
+
+        let countdownValue = 3;
+        this.time.addEvent({
+            delay: 1000,
+            repeat: 3,
+            callback: () => {
+                countdownValue--;
+                if (countdownValue > 0) {
+                    countdownText.setText(String(countdownValue));
+                } else {
+                    countdownText.destroy();
+                    this.gameStarted = true;
+                    this.cpuThrow(starterIndex);
+                }
+            }
+        });
 
         this.showEndScreen = () => {
             if (this.gameOver) return;
@@ -257,12 +296,12 @@ window.GameScene = class GameScene extends Phaser.Scene {
             const overlay = this.add.rectangle(400, 300, 800, 600, 0x000000, 0.75);
             overlay.setDepth(100);
 
-            const title = this.add.text(400, 180, 'Das Spiel ist beendet.', {
+            const title = this.add.text(400, 180, 'The game is over.', {
                 fontFamily: 'Arial', fontSize: '32px', color: '#ffffff'
             }).setOrigin(0.5);
             title.setDepth(101);
 
-            const codeText = this.add.text(400, 260, 'Dein Code:', {
+            const codeText = this.add.text(400, 260, 'Your code:', {
                 fontFamily: 'Arial', fontSize: '20px', color: '#cccccc'
             }).setOrigin(0.5);
             codeText.setDepth(101);
@@ -273,7 +312,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
             codeValue.setDepth(101);
 
             const info = this.add.text(400, 400,
-                'Bitte gib diesen Code in der Online-Befragung ein,\num zu bestätigen, dass du das Spiel gespielt hast.',
+                'Please enter this code in the online survey to confirm\nthat you completed the game.',
                 {
                     fontFamily: 'Arial', fontSize: '16px', color: '#cccccc',
                     align: 'center', wordWrap: { width: 600 }
@@ -289,7 +328,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
 
         this.players.forEach((player, index) => {
             player.on('pointerdown', () => {
-                if (this.gameOver) return;
+                if (this.gameOver || !this.gameStarted) return;
                 if (this.currentHolder === 0 && index !== 0) {
                     this.players[0].flipX = player.x < this.players[0].x;
                     this.players[0].play('throw');
@@ -305,7 +344,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
         });
 
         this.physics.add.overlap(this.ball, this.players, (ball, player) => {
-            if (this.gameOver) return;
+            if (this.gameOver || !this.gameStarted) return;
             const playerIndex = this.players.indexOf(player);
             if (!this.ballInMotion) return;
 
@@ -319,9 +358,6 @@ window.GameScene = class GameScene extends Phaser.Scene {
                 player.play('catch');
 
                 this.throwCount++;
-                if (this.throwsText) {
-                    this.throwsText.setText(`Würfe: ${this.throwCount} / ${this.totalThrows}`);
-                }
 
                 this.time.delayedCall(500, () => {
                     player.play('active');
@@ -335,25 +371,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
                                 return;
                             }
 
-                            player.play('throw');
-                            const cpuThrowPos = this.getThrowPosition(player);
-                            this.ball.setPosition(cpuThrowPos.x, cpuThrowPos.y);
-
-                            let target;
-                            if (this.gameMode === 'exclusion') {
-                                // CPUs never throw to the human player (index 0)
-                                const otherCpus = this.players.filter((_, idx) => idx !== playerIndex && idx !== 0);
-                                target = Phaser.Math.RND.pick(otherCpus);
-                                if (!target) target = this.players[playerIndex === 1 ? 2 : 1] || this.players[0];
-                            } else {
-                                const otherPlayers = this.players.filter((_, idx) => idx !== playerIndex);
-                                target = Phaser.Math.RND.pick(otherPlayers);
-                            }
-
-                            target.flipX = player.x < target.x;
-                            this.ballInMotion = true;
-                            this.currentHolder = this.players.indexOf(target);
-                            this.physics.moveTo(this.ball, target.x, target.y, 600);
+                            this.cpuThrow(playerIndex);
                         });
                     } else {
                         // Human caught the ball; check end after catch completes

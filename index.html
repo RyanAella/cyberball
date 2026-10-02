@@ -55,6 +55,12 @@
     .game-view {
       display: none;
     }
+    body.in-game-mode .header {
+      display: none;
+    }
+    body.in-game-mode .game-info {
+      display: none;
+    }
     .config-view.hide {
       display: none;
     }
@@ -457,6 +463,7 @@
       // Direkt Spiel starten, wenn Parameter vorhanden
       document.getElementById("config-view").classList.add("hide");
       document.getElementById("game-view").classList.add("show");
+      document.body.classList.add("in-game-mode");
 
       window.cyberballConfig = {
         cpuCount: cpuCount,
@@ -803,6 +810,7 @@
 
       document.getElementById("config-view").classList.add("hide");
       document.getElementById("game-view").classList.add("show");
+      document.body.classList.add("in-game-mode");
 
       window.cyberballConfig = {
         cpuCount: config.cpuCount,

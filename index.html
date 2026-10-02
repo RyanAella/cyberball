@@ -55,6 +55,12 @@
     .game-view {
       display: none;
     }
+    body.in-game-mode .header {
+      display: none;
+    }
+    body.in-game-mode .game-info {
+      display: none;
+    }
     .config-view.hide {
       display: none;
     }
@@ -267,9 +273,15 @@
       width: 800px;
       height: 600px;
       background: #fff;
-      border: 2px solid #333;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    body.embedded .header,
+    body.embedded .game-info {
+      display: none;
+    }
+    body.embedded #game-container {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
     }
   </style>
 
@@ -278,7 +290,7 @@
     window.CYBERBALL_BASE = '/cyberball/';
     window.CPU_POSITIONS = {
       2: [{ x: 200, y: 300 }, { x: 600, y: 300 }],
-      3: [{ x: 200, y: 300 }, { x: 400, y: 100 }, { x: 600, y: 300 }]
+      3: [{ x: 200, y: 320 }, { x: 400, y: 180 }, { x: 600, y: 320 }]
     };
   </script>
 </head>
@@ -455,8 +467,10 @@
     // ========== ENTWEDER SPIEL ODER BUILDER ANZEIGEN ==========
     if (hasGameParams) {
       // Direkt Spiel starten, wenn Parameter vorhanden
+      document.body.classList.add("embedded");
       document.getElementById("config-view").classList.add("hide");
       document.getElementById("game-view").classList.add("show");
+      document.body.classList.add("in-game-mode");
 
       window.cyberballConfig = {
         cpuCount: cpuCount,
@@ -609,7 +623,9 @@
 
     // ========== PREVIEW LOGIC ==========
     function getConfig() {
+      const selectedCpuCount = parseInt(document.querySelector('input[name="cpus"]:checked')?.value) || 2;
       return {
+        cpuCount: selectedCpuCount,
         cpuCount: parseInt(document.querySelector('input[name="cpus"]:checked')?.value) || 2,
         bgType: document.querySelector('input[name="bgType"]:checked')?.value || "color",
         bgColor: document.getElementById("bgColorValue")?.value || "#f5f5f5",
@@ -624,12 +640,12 @@
         totalThrows: Math.max(parseInt(document.getElementById("totalThrows")?.value) || 30, 0),
         codePrefix: document.getElementById("codePrefix")?.value || "CB",
         redirectUrl: document.getElementById("redirectUrl")?.value || "",
-        cpuNames: Array.from({ length: cpuCount }, (_, i) =>
+        cpuNames: Array.from({ length: selectedCpuCount }, (_, i) =>
           document.querySelector(`.cpu-name-field[data-index="${i}"]`)?.value || `CPU ${i + 1}`
         ),
         avatars: [
           document.getElementById("avatarData0")?.value || "",
-          ...Array.from({ length: cpuCount }, (_, i) =>
+          ...Array.from({ length: selectedCpuCount }, (_, i) =>
             document.querySelector(`.cpu-avatar-data[data-index="${i}"]`)?.value || ""
           )
         ]
@@ -803,6 +819,8 @@
 
       document.getElementById("config-view").classList.add("hide");
       document.getElementById("game-view").classList.add("show");
+      document.body.classList.add("embedded");
+      document.body.classList.add("in-game-mode");
 
       window.cyberballConfig = {
         cpuCount: config.cpuCount,

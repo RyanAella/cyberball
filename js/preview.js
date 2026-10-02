@@ -153,7 +153,7 @@ window.PhaserPreviewScene = class extends Phaser.Scene {
         } else if (this.config.cpuCount === 3) {
             cpuPositions = [
                 { x: 200 * scaleX, y: 300 * scaleY },
-                { x: 400 * scaleX, y: 100 * scaleY },
+                { x: 400 * scaleX, y: 180 * scaleY },
                 { x: 600 * scaleX, y: 300 * scaleY }
             ];
         } else {

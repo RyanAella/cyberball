@@ -5,6 +5,11 @@ All notable changes to the Cyberball game.
 ---
 
 ## [Unreleased]
+
+### Fixed
+- **Chaos am Spielstart** – Der Countdown-Timer feuerte ein Mal zu viel (`repeat: 3` = 4 Aufrufe), wodurch der erste Wurf zweimal ausgelöst und zwei parallele Wurfketten gestartet wurden („Bälle aus allen Richtungen“). Der Timer feuert jetzt genau dreimal (3-2-1) und der erste Wurf startet nur einmal
+- **Avatar-/Hintergrundbilder in Befragungsumgebungen** – Base64-Bilddaten in Links werden jetzt URL-sicher kodiert (base64url: keine `+`, `/`, `=`), damit Einbettungs- oder Befragungssoftware die Daten beim Weiterreichen nicht beschädigt; bestehende Links im alten Format funktionieren weiterhin
+
 ### Added
 - **Two game modes** – `inclusion` (participant plays along and receives balls) and `exclusion` (participant receives no balls), selectable via URL parameter `mode`
 - **Custom CPU names** – Individual names for each CPU player, configurable in the builder (`cpuNames` URL parameter)

@@ -454,7 +454,7 @@
     const bgType = urlParams.get("bgType") || "color";
     const bgColor = getParam("bg") || "#f5f5f5";
     const bgImageUrl = bgType === "image" && getParam("bg")
-            ? getParam("bg")
+            ? window.cyberballFromUrlSafeDataUrl(getParam("bg"))
             : "";
     const playerColor = urlParams.get("playerColor") || "#FFFFFF";
     const playerName = urlParams.get("pname") || "Player 1";
@@ -464,8 +464,8 @@
     const codePrefix = urlParams.get("codePrefix") || "CB";
     const redirectUrl = urlParams.get("redirect") || "";
     const cpuNamesParam = urlParams.get("cpuNames") ? urlParams.get("cpuNames").split("|") : [];
-    const avatarUrlsParam = getParam("avatars") ? getParam("avatars").split("|") : [];
-    const participantAvatar = getParam("avatar0") || "";
+    const avatarUrlsParam = getParam("avatars") ? getParam("avatars").split("|").map(window.cyberballFromUrlSafeDataUrl) : [];
+    const participantAvatar = window.cyberballFromUrlSafeDataUrl(getParam("avatar0") || "");
 
     // ========== ENTWEDER SPIEL ODER BUILDER ANZEIGEN ==========
     if (hasGameParams) {
@@ -664,7 +664,7 @@
       if (config.bgType === "color") {
         params.set("bg", config.bgColor);
       } else if (config.bgImageUrl) {
-        hashParams.set("bg", config.bgImageUrl);
+        hashParams.set("bg", window.cyberballToUrlSafeDataUrl(config.bgImageUrl));
       }
 
       if (customizeChecked) {
@@ -686,10 +686,10 @@
         params.set("cpuNames", config.cpuNames.join("|"));
       }
       if (config.avatars.slice(1).some(a => a)) {
-        hashParams.set("avatars", config.avatars.slice(1).join("|"));
+        hashParams.set("avatars", config.avatars.slice(1).map(a => window.cyberballToUrlSafeDataUrl(a)).join("|"));
       }
       if (config.avatars[0]) {
-        hashParams.set("avatar0", config.avatars[0]);
+        hashParams.set("avatar0", window.cyberballToUrlSafeDataUrl(config.avatars[0]));
       }
       return { params, hashParams };
     }

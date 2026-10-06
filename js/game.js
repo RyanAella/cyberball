@@ -29,6 +29,31 @@ window.getCyberballParam = function getCyberballParam(name, fallback) {
     return fallback;
 };
 
+// ========== HELPER: URL-SICHERE BASE64-DATA-URLS ==========
+// base64url-Variante (keine '+', '/', '=') übersteht auch mehrfaches
+// Dekodieren/Neukodieren durch Befragungs- oder Einbettungs-Plattformen.
+window.cyberballToUrlSafeDataUrl = function toUrlSafeDataUrl(value) {
+    if (typeof value !== 'string') return value;
+    const idx = value.indexOf('base64,');
+    if (idx === -1) return value;
+    const prefix = value.slice(0, idx + 7);
+    const payload = value.slice(idx + 7)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    return prefix + payload;
+};
+
+window.cyberballFromUrlSafeDataUrl = function fromUrlSafeDataUrl(value) {
+    if (typeof value !== 'string') return value;
+    const idx = value.indexOf('base64,');
+    if (idx === -1) return value;
+    const prefix = value.slice(0, idx + 7);
+    let payload = value.slice(idx + 7).replace(/-/g, '+').replace(/_/g, '/');
+    while (payload.length % 4 !== 0) payload += '=';
+    return prefix + payload;
+};
+
 // ========== HELPER: COMPLETION CODE GENERIEREN ==========
 window.generateCompletionCode = function generateCompletionCode(prefix) {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -59,7 +84,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
         const bgValue = window.getCyberballParam('bg', '');
 
         if (bgType === 'image' && bgValue) {
-            const imageUrl = bgValue;
+            const imageUrl = window.cyberballFromUrlSafeDataUrl(bgValue);
             // Temporarily reset base URL for absolute URLs
             const oldBaseURL = this.load.baseURL;
             this.load.setBaseURL('');
@@ -72,6 +97,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
         this.playersMeta.forEach((meta, index) => {
             const key = `avatar-${index}`;
             if (meta.avatarUrl) {
+                meta.avatarUrl = window.cyberballFromUrlSafeDataUrl(meta.avatarUrl);
                 const oldBaseURL = this.load.baseURL;
                 this.load.setBaseURL('');
                 this.load.image(key, meta.avatarUrl);
@@ -270,12 +296,12 @@ window.GameScene = class GameScene extends Phaser.Scene {
         let countdownValue = 3;
         this.time.addEvent({
             delay: 1000,
-            repeat: 3,
+            repeat: 2,
             callback: () => {
                 countdownValue--;
                 if (countdownValue > 0) {
                     countdownText.setText(String(countdownValue));
-                } else {
+                } else if (!this.gameStarted) {
                     countdownText.destroy();
                     this.gameStarted = true;
                     this.cpuThrow(starterIndex);

@@ -4,7 +4,7 @@ All notable changes to the Cyberball game.
 
 ---
 
-## [Unreleased]
+## [0.7.0] – 2026-10-06
 
 ### Fixed
 - **Chaos am Spielstart** – Der Countdown-Timer feuerte ein Mal zu viel (`repeat: 3` = 4 Aufrufe), wodurch der erste Wurf zweimal ausgelöst und zwei parallele Wurfketten gestartet wurden („Bälle aus allen Richtungen“). Der Timer feuert jetzt genau dreimal (3-2-1) und der erste Wurf startet nur einmal

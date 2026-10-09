@@ -368,7 +368,7 @@
                 <h3>Spielende</h3>
                 <div class="form-group">
                   <label for="totalThrows">Anzahl Würfe bis Spielende (0 = unbegrenzt)</label>
-                  <input type="number" id="totalThrows" class="input-field" value="30" min="0" max="500" />
+                  <input type="number" id="totalThrows" class="input-field" value="30" min="0" max="32" />
                 </div>
                 <div class="form-group">
                   <label for="codePrefix">Code-Präfix (z.B. Uni, LAB)</label>
@@ -460,7 +460,7 @@
     const playerName = urlParams.get("pname") || "Player 1";
     const customizeEnabled = !!urlParams.get("playerColor");
     const gameMode = urlParams.get("mode") || "inclusion";
-    const totalThrows = Math.max(parseInt(urlParams.get("throws")) || 30, 0);
+    const totalThrows = Math.min(Math.max(parseInt(urlParams.get("throws")) || 30, 0), 32);
     const codePrefix = urlParams.get("codePrefix") || "CB";
     const redirectUrl = urlParams.get("redirect") || "";
     const cpuNamesParam = urlParams.get("cpuNames") ? urlParams.get("cpuNames").split("|") : [];

@@ -51,7 +51,7 @@ zeigt die Seite stattdessen den Builder an.
 |---------------|-----------|----------|
 | `cpus`        | Anzahl CPU-Mitspieler: `2` oder `3` | `2` |
 | `mode`        | `inclusion` (Spieler erhält Bälle) oder `exclusion` (Spieler wird ignoriert) | `inclusion` |
-| `throws`      | Anzahl Würfe bis zum Spielende; `0` = unbegrenzt | `30` |
+| `throws`      | Anzahl Würfe bis zum Spielende; max. 32; `0` = unbegrenzt | `30` |
 | `bgType`      | `color` oder `image` | `color` |
 | `bg`          | Hintergrundfarbe (Hex) **oder** Base64-Bild-Data-URL (URL-encoded) | `#f5f5f5` |
 | `playerColor` | Farbe des eigenen Avatars (nur wenn „Customize" aktiviert war) | `#FFFFFF` |

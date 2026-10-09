@@ -51,7 +51,7 @@ zeigt die Seite stattdessen den Builder an.
 |---------------|-----------|----------|
 | `cpus`        | Anzahl CPU-Mitspieler: `2` oder `3` | `2` |
 | `mode`        | `inclusion` (Spieler erhält Bälle) oder `exclusion` (Spieler wird ignoriert) | `inclusion` |
-| `throws`      | Anzahl Würfe bis zum Spielende; `0` = unbegrenzt | `30` |
+| `throws`      | Anzahl Würfe bis zum Spielende; max. 32; `0` = unbegrenzt | `30` |
 | `bgType`      | `color` oder `image` | `color` |
 | `bg`          | Hintergrundfarbe (Hex) **oder** Base64-Bild-Data-URL (URL-encoded) | `#f5f5f5` |
 | `playerColor` | Farbe des eigenen Avatars (nur wenn „Customize" aktiviert war) | `#FFFFFF` |
@@ -70,8 +70,10 @@ VS-Code Live Server) einen 404-Fehler. Der „Copy Link"-Button setzt den Slash 
 
 ## 4. Spielmodi & Verhalten
 
-- **Inclusion:** Der Ball startet bei einem zufälligen CPU. CPUs werfen zufällig an alle anderen –
-  auch an den Teilnehmenden. Wer den Ball hat, wirft per Klick auf einen Mitspieler.
+- **Inclusion:** Der Ball startet bei einem zufälligen CPU. CPUs werfen bevorzugt an die Spieler
+  mit den wenigsten bisherigen Ballkontakten (Gleichstand zufällig aufgelöst) – so erhält der
+  Teilnehmende bei 30–32 Würfen zuverlässig ca. 7–8 Bälle und die CPUs werden ungefähr gleich
+  oft eingebunden. Wer den Ball hat, wirft per Klick auf einen Mitspieler.
 - **Exclusion:** Nach dem ersten eigenen Wurf des Teilnehmenden werfen die CPUs nur noch
   untereinander – der Teilnehmende erhält keinen Ball mehr (klassische Ostrazismus-Bedingung).
 - **Spielende:** Nach der eingestellten Wurfanzahl (`throws`) erscheint der Endscreen mit dem

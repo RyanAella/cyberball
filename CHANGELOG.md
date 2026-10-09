@@ -4,6 +4,11 @@ All notable changes to the Cyberball game.
 
 ---
 
+## [Unreleased]
+
+### Changed
+- **Balanced throw distribution in inclusion mode** – CPUs now preferentially throw to the player(s) with the fewest ball receptions so far (ties broken randomly). With 3 CPUs and 30–32 total throws the participant reliably receives ~7–8 balls and all players are involved about equally often; previously targets were picked purely at random, so the participant could end up with far fewer balls.
+
 ## [0.7.0] – 2026-10-06
 
 ### Fixed

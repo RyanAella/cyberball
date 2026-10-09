@@ -165,6 +165,8 @@ window.GameScene = class GameScene extends Phaser.Scene {
             );
         }
 
+        this.receiveCounts = this.players.map(() => 0);
+
         this.players.forEach(player => {
             player.setScale(1);
             player.setImmovable(true);
@@ -270,7 +272,10 @@ window.GameScene = class GameScene extends Phaser.Scene {
                 if (!target) target = this.players[playerIndex === 1 ? 2 : 1] || this.players[0];
             } else {
                 const otherPlayers = this.players.filter((_, idx) => idx !== playerIndex);
-                target = Phaser.Math.RND.pick(otherPlayers);
+                const counts = otherPlayers.map(p => (this.receiveCounts ? this.receiveCounts[this.players.indexOf(p)] : 0));
+                const minCount = Math.min(...counts);
+                const leastFed = otherPlayers.filter((p, i) => counts[i] === minCount);
+                target = Phaser.Math.RND.pick(leastFed);
             }
 
             target.flipX = player.x < target.x;
@@ -384,6 +389,7 @@ window.GameScene = class GameScene extends Phaser.Scene {
                 player.play('catch');
 
                 this.throwCount++;
+                if (this.receiveCounts) this.receiveCounts[playerIndex]++;
 
                 this.time.delayedCall(500, () => {
                     player.play('active');
